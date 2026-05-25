@@ -18,6 +18,19 @@ export default (pool) => {
     }
   })
 
+  // Timeline range
+  router.get('/range', async (req, res) => {
+    try {
+      const result = await pool.query(`
+        SELECT MIN(start_year) - 30 AS range_start, MAX(end_year) + 30 AS range_end
+        FROM layer
+      `)
+      res.json(result.rows[0])
+    } catch (err) {
+      res.status(500).json({ error: err.message })
+    }
+  })
+
   // Sublayers for a specific layer
   router.get('/:label/sublayers', async (req, res) => {
     try {

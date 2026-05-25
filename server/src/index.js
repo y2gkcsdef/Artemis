@@ -3,6 +3,7 @@ import pg from 'pg'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import cors from 'cors'
 import layersRouter from './routes/layers.js'
 
 dotenv.config()
@@ -11,6 +12,11 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
+
+app.use(cors({
+  origin: 'http://localhost:5173'
+}))
+
 const pool = new pg.Pool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
