@@ -1,19 +1,19 @@
 <script lang="ts">
-  const MIN_VISUAL_YEARS = 15
+  import type { TimelineLayerState } from '$lib/stores/timeline'
+
   const TRACK_HEIGHT = 26
   const AXIS_OFFSET = 12
   const BELOW_AXIS_GAP = 7
 
   const { layer, toPercent, trackCount } = $props<{
-    layer: { label: string; start_year: number; end_year: number; track: number }
+    layer: TimelineLayerState
     toPercent: (year: number) => number
     trackCount: number
   }>()
 
   const axisTop = $derived(AXIS_OFFSET + Math.ceil(trackCount / 2) * TRACK_HEIGHT)
   const visualWidth = $derived(
-    toPercent(Math.max(layer.end_year, layer.start_year + MIN_VISUAL_YEARS)) -
-      toPercent(layer.start_year)
+    toPercent(layer.visual_end_year) - toPercent(layer.visual_start_year)
   )
   const colorMix = $derived(getColorMix(layer.label))
 
@@ -39,8 +39,8 @@
 <div
   class="layer-block"
   style="
-    left: {toPercent(layer.start_year)}%;
-    width: max(4px, {visualWidth}%);
+    left: {toPercent(layer.visual_start_year)}%;
+    width: {visualWidth}%;
     top: {getTop(layer.track)}px;
     --layer-color-mix: {colorMix};
   "
@@ -66,7 +66,6 @@
     align-items: center;
     justify-content: center;
     padding: 0 6px;
-    min-width: max-content;
 
     /* Text */
     color: white;

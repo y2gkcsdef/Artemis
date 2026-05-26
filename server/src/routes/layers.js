@@ -35,7 +35,7 @@ export default (pool) => {
   router.get('/:label/sublayers', async (req, res) => {
     try {
       const result = await pool.query(`
-        SELECT id, label, type, source, default_visibility, sort_order
+        SELECT id, layer_label, label, type, source, default_visibility, sort_order
         FROM sublayer
         WHERE layer_label = $1
         ORDER BY sort_order

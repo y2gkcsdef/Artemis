@@ -5,6 +5,8 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import cors from 'cors'
 import layersRouter from './routes/layers.js'
+import remoteServicesRouter from './routes/remoteServices.js'
+import sublayersRouter from './routes/sublayers.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -37,6 +39,8 @@ app.use('/tiles', express.static(path.join(__dirname, '../../../tiles')))
 
 // Routes
 app.use('/api/layers', layersRouter(pool))
+app.use('/api/remote-services', remoteServicesRouter(pool))
+app.use('/api/sublayers', sublayersRouter(pool))
 
 // Health check
 app.get('/health', async (req, res) => {

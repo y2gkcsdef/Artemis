@@ -1,256 +1,117 @@
-# Artemis — Project Context
+# Artemis Context
 
-## What is Artemis
-
-Artemis is a historical map viewer for the Scheldt/Schelde region, developed for Ghent University (GhentCDH). It allows researchers to explore and compare digitised historical cadastral maps across time. The public-facing name is **Schelde Gemapt**.
-
----
-
-## Repository
-
-Single monorepo: `Artemis` (personal GitHub account, not GhentCDH)
-
-```
-Artemis/
-├── client/        # SvelteKit frontend
-├── server/        # Express API
-├── .env.example
-└── CONTEXT.md
-```
-
-Tiles are NOT in the repo — they are served locally from a path outside the repo.
-
----
+Artemis is a historical map viewer for the Scheldt/Schelde region. Public name: **Schelde Gemapt**.
 
 ## Stack
+- Monorepo: `client/` SvelteKit + MapLibre, `server/` Express + `pg`.
+- Frontend dev URL: `http://localhost:5173`.
+- API URL: `http://localhost:3000`.
+- Database: PostgreSQL/PostGIS, DB `Artemis`, read user `artemis_reader`.
+- Geometry is stored in EPSG:4326. XYZ tiles are served as EPSG:3857.
+- No ORM. Server uses raw SQL.
 
-### Frontend — `client/`
-- **SvelteKit** (Svelte 5, runes mode)
-- **MapLibre GL** — map renderer
-- **Vanilla CSS** — no UI framework, no Tailwind
-- **pnpm** — package manager
-- Runs on `http://localhost:5173` in dev
+## Current Structure
+```txt
+client/src/
+├── app.css                         # global tokens, reset, body font
+├── routes/+layout.svelte           # imports app.css
+├── routes/+page.svelte             # fetches timeline data, renders map + timeline
+└── lib/
+    ├── stores/timeline.ts          # layers, currentYear, visual timeline state
+    └── components/
+        ├── base/Window.svelte
+        ├── map/Mapcanvas.svelte
+        ├── map/renderers/           # renderer manager, registry, type handlers
+        └── timeline/
+            ├── Timeline.svelte
+            ├── TimelineLayer.svelte
+            └── Scrubber.svelte
 
-### Backend — `server/`
-- **Express** (Node.js, ESM)
-- **pg** — PostgreSQL client
-- **cors** — configured for `http://localhost:5173`
-- **dotenv** — env config
-- Runs on `http://localhost:3000`
+server/src/
+├── index.js
+├── sublayerTypes.js                # sublayer type -> backing table resolver
+└── routes/
+    ├── layers.js
+    └── sublayers.js
+```
 
-### Database
-- **PostgreSQL + PostGIS**
-- Database name: `Artemis` (capital A)
-- All geometry stored in **EPSG:4326**
-- Read-only user: `artemis_reader`
-
-### Tiles
-- Gereduceerd Kadaster XYZ tiles pre-generated via `gdal2tiles.py`
-- Served statically by Express at `/tiles/Gereduceerd_Kadaster_tiles/{z}/{x}/{y}.png`
-- Zoom range: z11–z17
-- Source warped from EPSG:31370 → EPSG:3857
-
----
-
-## Database Schema
-
-### `layer`
-| column | type |
-|---|---|
-| label | TEXT (PK in practice) |
-| start_year | INT |
-| end_year | INT |
-
-### `sublayer`
-| column | type |
-|---|---|
-| id | SERIAL PK |
-| layer_label | TEXT (FK → layer.label) |
-| label | TEXT |
-| type | TEXT — `wmts` \| `iiif_tileserver` \| `parcel` \| `toponym` |
-| source | TEXT |
-| default_visibility | BOOLEAN |
-| sort_order | INT |
-
-### `parcel`
-| column | type |
-|---|---|
-| id | SERIAL PK |
-| sublayer_id | INT FK |
-| text | TEXT |
-| geometry | GEOMETRY(Polygon, 4326) |
-
-### `toponym`
-| column | type |
-|---|---|
-| id | SERIAL PK |
-| sublayer_id | INT FK |
-| text | TEXT |
-| geometry | GEOMETRY(Point, 4326) |
-| lon | FLOAT |
-| lat | FLOAT |
-
-### `iiif_tileserver`
-| column | type |
-|---|---|
-| id | SERIAL PK |
-| sublayer_id | INT FK |
-| local_tileserver | TEXT |
-
-### `iiif_mask`
-| column | type |
-|---|---|
-| id | SERIAL PK |
-| iiif_tileserver_id | INT FK |
-| geometry | GEOMETRY(Polygon, 4326) |
-| manifest | TEXT |
-| title | TEXT |
-| sprite_x | INT |
-| sprite_y | INT |
-| sprite_width | INT |
-| sprite_height | INT |
-
-Full text index: `GIN(to_tsvector('dutch', title))`
-
-### `wmts`
-| column | type |
-|---|---|
-| id | SERIAL PK |
-| sublayer_id | INT FK |
-| service | TEXT |
-
-### `image_collection` — NOT YET CREATED
-### `image` — NOT YET CREATED
-
----
-
-## API Routes
-
+## API
 Base URL: `http://localhost:3000`
 
-| Method | Route | Description |
-|---|---|---|
-| GET | `/health` | DB connectivity check |
-| GET | `/api/layers` | All layers ordered by start_year |
-| GET | `/api/layers/range` | `{ range_start, range_end }` — min/max years ±30 |
-| GET | `/api/layers/:label/sublayers` | Sublayers for a specific layer |
-| STATIC | `/tiles/*` | XYZ tile files |
-
----
-
-## Layers in Database (chronological)
-
-| Label | Start | End |
-|---|---|---|
-| Frickx | 1712 | 1712 |
-| Villaret | 1745 | 1748 |
-| Ferraris | 1771 | 1771 |
-| Primitief Kadaster | 1808 | 1834 |
-| Poppkaart | 1842 | 1879 |
-| Vandermaelen | 1846 | 1846 |
-| Gereduceerd Kadaster | 1847 | 1855 |
-| NGI 1873 | 1873 | 1873 |
-| NGI 1904 | 1904 | 1904 |
-
-Timeline range (from `/api/layers/range`): **1682 – 1934**
-
----
-
-## Frontend Structure
-
-```
-client/src/
-├── app.css                          # Global CSS variables + .window class
-├── routes/
-│   ├── +layout.svelte               # imports app.css
-│   └── +page.svelte                 # orchestrates fetchLayers, renders MapCanvas + Timeslider
-└── lib/
-    ├── stores/
-    │   └── layers.ts                # layers store, timelineRange store, fetchLayers()
-    └── components/
-        ├── map/
-        │   └── MapCanvas.svelte     # MapLibre map, OSM baselayer, Belgium center
-        └── ui/
-            ├── Timeslider.svelte    # timeline bar, axis, ticks, layer blocks
-            └── TimesliderLayer.svelte  # individual layer block on timeline
+```txt
+GET /health
+GET /api/layers
+GET /api/layers/range
+GET /api/layers/:label/sublayers
+GET /api/sublayers/resolve/:id
+GET /api/remote-services/:sublayerId
+STATIC /tiles/*
 ```
 
----
+`/api/layers` returns layer rows only. `/api/layers/:label/sublayers` returns sublayers separately. The frontend nests sublayers into layer state at initialization.
 
-## Design System
+`/api/sublayers/resolve/:id` looks up `sublayer.id`, reads `type`, and returns the current hardcoded backing table mapping.
 
-### CSS Variables (app.css)
-```css
-:root {
-  --radius: 10px;
-  --border: 0.5px solid rgba(0, 0, 0, 0.1);
-  --bg: #ffffff;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
+`/api/remote-services/:sublayerId` returns `remote_service` rows by `sublayer_id`.
+
+## Data Model
+- `layer`: `label`, `start_year`, `end_year`.
+- `sublayer`: `id`, `layer_label`, `label`, `type`, `source`, `default_visibility`, `sort_order`.
+- `sublayer.type`: `wmts`, `wms`, `wfs`, `iiif_tileserver`, `parcel`, `toponym`.
+- Type resolver:
+  - `wmts`, `wms`, `wfs` -> `remote_service`
+  - `iiif_tileserver` -> `iiif_tileserver`
+  - `parcel` -> `parcel`
+  - `toponym` -> `toponym`
+- Type-specific tables use `sublayer_id = sublayer.id`.
+- For `remote_service`, render URLs come from `remote_service.endpoint`; `sublayer.source` is provider metadata.
+
+## Timeline State
+`client/src/lib/stores/timeline.ts` owns shared timeline state:
+- `layers`: fetched layers with nested sublayers.
+- `timelineRange`: API range.
+- `currentYear`: scrubber-selected year.
+- `timelineLayers`: derived visual layer state with `track`, `visual_start_year`, `visual_end_year`.
+- `activeLayers`: derived from visual overlap, not historical range.
+- `activeSublayers`: default-visible sublayers from active layers, sorted by `sort_order`.
+
+Important: activation is **visual**. If the scrubber is over a rendered timeline block, that layer is active. Therefore timeline rendering and active-layer logic must use the same `timelineLayers` visual state.
+
+## Timeline UI
+- `Timeline.svelte`: orchestrates axis, ticks, scrubber, layer blocks, and debug logging.
+- `TimelineLayer.svelte`: renders one visual layer block.
+- `Scrubber.svelte`: draggable year selector; updates `currentYear`.
+- `Window.svelte`: reusable base component for window chrome.
+
+Temporary debug logs in `Timeline.svelte` print active layers and default sublayers when scrubber state changes.
+
+## Map Rendering
+Renderers live under `client/src/lib/components/map/renderers/`.
+
+Current flow:
+```txt
+Scrubber -> currentYear store
+currentYear -> activeLayers -> activeSublayers
+Mapcanvas subscribes to activeSublayers after map load
+Renderer manager resolves each sublayer via /api/sublayers/resolve/:id
+Renderer registry dispatches by resolved sublayer.type
+Remote service renderer fetches /api/remote-services/:sublayerId and uses remote_service.endpoint
 ```
 
-### `.window` class
-Reusable panel chrome — border, radius, shadow, background. Applied to Timeslider and all floating UI panels.
+Do not make timeline components call MapLibre directly.
 
-### Typography
-- **DM Sans** — UI labels
-- **DM Mono** — year labels, tick marks, monospaced values
+Remote service rendering is implemented for `wmts`, `wms`, and best-effort GeoJSON `wfs`. Other renderer modules are stubs/loggers.
 
-### Color philosophy
-- **One accent color**: warm ochre `#A8904F` — all interactable elements
-- **Brightness = interactability**: bright = active/clickable, desaturated = inactive/background
-- Layer blocks: `#8B7355` (muted brown) when inactive
-
----
-
-## Timeslider — Current State
-
-The timeslider is positioned absolutely at the bottom of the screen (`bottom: 16px`, `left/right: 16px`), wrapped in a `.window` div.
-
-**What works:**
-- Fetches layers from `/api/layers` and range from `/api/layers/range`
-- Renders horizontal axis line with tick marks every 10 years (rounded to nearest 10)
-- Renders layer blocks positioned by `start_year`/`end_year` as percentages of total range
-- Multi-track layout: layers assigned to tracks to avoid overlap, even tracks above axis, odd tracks below
-
-**What still needs work:**
-- Track layout above/below axis line not fully resolved
-- Layer blocks need click interaction (slot assignment)
-- Sublayer panel not yet implemented
-- No scrubber/cursor yet
-- Styling needs to match design spec (ochre accent, DM fonts, proper sizing)
-
----
-
-## Timeslider — Design Spec
-
-### Layout
-- Two rows of layer blocks **above** the axis line
-- Two rows of layer blocks **below** the axis line
-- Axis line in the center with tick marks and year labels below it
-- Window height adjusts dynamically based on track count
-
-### Layer Block Behaviour
-- **Idle**: full opacity, `#8B7355` fill
-- **Slot A active**: solid ochre ring
-- **Slot B active**: dashed ochre ring
-- **Dimmed**: reduced opacity when both slots are taken by other layers
-- Click to assign to slot A; if slot A taken, assign to slot B
-- Second click on active layer deactivates it
-
-### Sublayer Panel
-- Opens below the timeslider when a layer block is clicked
-- Shows sublayer toggles (Map, Parcels, Toponyms etc.)
-- Each sublayer has a type badge and a visibility toggle
-
----
+## Design Notes
+- Global CSS is only tokens/reset/body defaults.
+- Component-specific styling stays inside that component.
+- Reusable primitives go in `components/base`.
+- Feature-owned components go in `components/<feature>`.
+- Radius tokens are global because visual rounding must stay consistent.
+- Window colors/border/shadow are local to `Window.svelte`; window radius uses global `--radius-window`.
 
 ## Key Decisions
-
-- **No Allmaps** — tiles are pre-generated, not georeferenced at runtime
-- **No vector tile server** — parcels/toponyms served as GeoJSON directly from Express
-- **No ORM** — raw SQL via `pg`
-- **Svelte 5 runes mode** — use `$props()` not `export let`, `$derived` not `$:`
-- **EPSG:4326** in PostGIS, **EPSG:3857** for XYZ tiles
-- **Tiles not in repo** — too large, deployment concern only
-- **Sprite paths** never stored in DB — resolved at runtime from `STATIC_BASE_URL` env var + label convention
+- No Allmaps.
+- No vector tile server for parcels/toponyms; serve GeoJSON from Express later.
+- Runtime type resolution is hardcoded for now; cache/config support can be added later.
+- Heavy render data should be fetched only when needed, not during timeline init.

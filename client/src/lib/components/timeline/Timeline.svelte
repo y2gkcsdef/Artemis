@@ -1,19 +1,21 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte'
   import { derived } from 'svelte/store'
-  import { currentYear, layers, timelineRange, type Layer } from '$lib/stores/timeline'
+  import {
+    activeLayers,
+    activeSublayers,
+    currentYear,
+    layers,
+    timelineLayers,
+    timelineRange,
+    TIMELINE_MAX_TRACKS
+  } from '$lib/stores/timeline'
   import Window from '$lib/components/base/Window.svelte'
   import Scrubber from '$lib/components/timeline/Scrubber.svelte'
   import TimelineLayer from '$lib/components/timeline/TimelineLayer.svelte'
 
-  type LayerWithTrack = Layer & {
-    track: number
-  }
-
-  const MAX_TRACKS = 4
   const TRACK_HEIGHT = 26
   const BASE_HEIGHT = 24
-  const LABEL_PADDING_YEARS = 3
-  const MIN_VISUAL_YEARS = 15
 
   const rangeStart = derived(timelineRange, $t => $t.range_start)
   const totalYears = derived(timelineRange, $t => $t.range_end - $t.range_start)
@@ -29,36 +31,41 @@
     return Array.from({ length: count }, (_, i) => start + i * 10)
   })
 
-  const layersWithTracks = derived(layers, $layers => {
-    const trackEnds = Array.from({ length: MAX_TRACKS }, () => Number.NEGATIVE_INFINITY)
-
-    return $layers.map(layer => {
-      const labelYears = Math.ceil(layer.label.length * 1.4) + LABEL_PADDING_YEARS
-      const visualEndYear =
-        layer.start_year + Math.max(layer.end_year - layer.start_year, MIN_VISUAL_YEARS, labelYears)
-
-      let assigned = -1
-
-      for (let i = 0; i < trackEnds.length; i++) {
-        if (layer.start_year > trackEnds[i]) {
-          assigned = i
-          break
-        }
-      }
-
-      if (assigned === -1) {
-        assigned = trackEnds.indexOf(Math.min(...trackEnds))
-      }
-
-      trackEnds[assigned] = visualEndYear
-
-      return { ...layer, track: assigned }
-    })
-  })
-
-  const trackCount = derived(layers, $layers => ($layers.length > 0 ? MAX_TRACKS : 0))
+  const trackCount = derived(layers, $layers => ($layers.length > 0 ? TIMELINE_MAX_TRACKS : 0))
 
   const axisTop = derived(trackCount, $trackCount => 12 + Math.ceil($trackCount / 2) * TRACK_HEIGHT)
+
+  const unsubscribeActiveLayers = activeLayers.subscribe($activeLayers => {
+    console.log(
+      '[timeline] active layers',
+      $activeLayers.map(layer => ({
+        label: layer.label,
+        start_year: layer.start_year,
+        end_year: layer.end_year,
+        visual_start_year: layer.visual_start_year,
+        visual_end_year: layer.visual_end_year,
+        track: layer.track
+      }))
+    )
+  })
+
+  const unsubscribeActiveSublayers = activeSublayers.subscribe($activeSublayers => {
+    console.log(
+      '[timeline] active default sublayers',
+      $activeSublayers.map(sublayer => ({
+        id: sublayer.id,
+        layer_label: sublayer.layer_label,
+        label: sublayer.label,
+        type: sublayer.type,
+        sort_order: sublayer.sort_order
+      }))
+    )
+  })
+
+  onDestroy(() => {
+    unsubscribeActiveLayers()
+    unsubscribeActiveSublayers()
+  })
 </script>
 
 <div class="timeline" style="height: {BASE_HEIGHT + $trackCount * TRACK_HEIGHT}px;">
@@ -70,9 +77,9 @@
         </div>
       {/each}
 
-      <div class="axis-line"></div>
+        <div class="axis-line"></div>
 
-      {#each $layersWithTracks as layer}
+      {#each $timelineLayers as layer}
         <TimelineLayer {layer} {toPercent} trackCount={$trackCount} />
       {/each}
 
