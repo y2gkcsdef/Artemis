@@ -6,10 +6,17 @@ import { fileURLToPath } from 'url'
 import cors from 'cors'
 import layersRouter from './routes/layers.js'
 
-dotenv.config()
-
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+dotenv.config({ path: path.join(__dirname, '../.env') })
+
+const requiredEnv = ['DB_HOST', 'DB_PORT', 'DB_NAME', 'DB_USER', 'DB_PASSWORD']
+const missingEnv = requiredEnv.filter((key) => !process.env[key])
+
+if (missingEnv.length > 0) {
+  throw new Error(`Missing required environment variables: ${missingEnv.join(', ')}`)
+}
 
 const app = express()
 
@@ -19,7 +26,7 @@ app.use(cors({
 
 const pool = new pg.Pool({
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
+  port: Number(process.env.DB_PORT),
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,

@@ -3,3 +3,4 @@ node_modules/
 client/.svelte-kit/
 client/build/
 server/dist/
+Tiles/

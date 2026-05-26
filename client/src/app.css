@@ -1,0 +1,19 @@
+:root {
+  --radius-window: 10px;
+  --radius-sm: 5px;
+  --radius-pill: 999px;
+  --control-corner-ratio: 4;
+  --font-ui: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  font-family: var(--font-ui);
+}
