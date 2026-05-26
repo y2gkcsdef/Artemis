@@ -15,11 +15,16 @@ Artemis is a historical map viewer for the Scheldt/Schelde region. Public name: 
 client/src/
 ├── app.css                         # global tokens, reset, body font
 ├── routes/+layout.svelte           # imports app.css
-├── routes/+page.svelte             # fetches timeline data, renders map + timeline
+├── routes/+page.svelte             # fetches timeline data, renders layout canvas
 └── lib/
-    ├── stores/timeline.ts          # layers, currentYear, visual timeline state
+    ├── stores/timeline.ts          # layer data, currentYear, visual timeline state
+    ├── stores/workspace.ts         # canvas/workspace state, e.g. compare mode
     └── components/
-        ├── base/Window.svelte
+        ├── base/
+        │   ├── Button.svelte
+        │   └── Window.svelte
+        ├── layout/
+        │   └── Canvas.svelte       # full app workspace composition
         ├── map/Mapcanvas.svelte
         ├── map/renderers/           # renderer manager, registry, type handlers
         └── timeline/
@@ -71,17 +76,39 @@ STATIC /tiles/*
 - `layers`: fetched layers with nested sublayers.
 - `timelineRange`: API range.
 - `currentYear`: scrubber-selected year.
+- `focusedLayerLabel`: user-focused visual layer after a timeline-layer click.
 - `timelineLayers`: derived visual layer state with `track`, `visual_start_year`, `visual_end_year`.
 - `activeLayers`: derived from visual overlap, not historical range.
 - `activeSublayers`: default-visible sublayers from active layers, sorted by `sort_order`.
+- `deactivatedLayerLabels`: visual layers suppressed because they overlap the focused layer.
 
 Important: activation is **visual**. If the scrubber is over a rendered timeline block, that layer is active. Therefore timeline rendering and active-layer logic must use the same `timelineLayers` visual state.
 
+Clicking a timeline layer focuses it, moves the scrubber to that layer's visual center year, and suppresses overlapping visual layers. Clicking the timeline background or dragging the scrubber clears layer focus and restores normal activation.
+
+## Workspace/Layout State
+`client/src/lib/stores/workspace.ts` owns canvas-level workspace state:
+- `compareEnabled`: whether the workspace is in compare mode.
+- `enableCompare()`, `disableCompare()`, `toggleCompare()`.
+
+`client/src/lib/components/layout/Canvas.svelte` owns app-surface composition:
+- The `workspace-layer` contains generic left/right workspace panes. These panes can contain MapLibre or other pane-specific content.
+- The `overlay-layer` contains full-canvas UI such as the compare button and the timeline.
+- The timeline intentionally lives in the overlay layer so it keeps full canvas width when compare mode splits the workspace panes.
+
+Compare mode direction:
+- Use an explicit two-pane model: left state always exists, right state will be added for compare.
+- Shared timeline data remains global: `layers`, `timelineRange`, `timelineLayers`.
+- Per-pane interaction state will become explicit left/right state: current year, focused layer, active layers, active sublayers, deactivated labels.
+- `Canvas.svelte` should own compare layout and, later, map camera synchronization.
+- Do not build around MapLibre's compare plugin; panes are generic and may contain non-map content later.
+
 ## Timeline UI
 - `Timeline.svelte`: orchestrates axis, ticks, scrubber, layer blocks, and debug logging.
-- `TimelineLayer.svelte`: renders one visual layer block.
-- `Scrubber.svelte`: draggable year selector; updates `currentYear`.
+- `TimelineLayer.svelte`: renders one visual layer block, owns layer click/focus interaction and visual active/deactivated states.
+- `Scrubber.svelte`: draggable year selector; updates `currentYear`; dragging clears layer focus.
 - `Window.svelte`: reusable base component for window chrome.
+- `Button.svelte`: reusable base button primitive. Sizing is controlled by the placing component through CSS variables.
 
 Temporary debug logs in `Timeline.svelte` print active layers and default sublayers when scrubber state changes.
 
@@ -100,15 +127,17 @@ Remote service renderer fetches /api/remote-services/:sublayerId and uses remote
 
 Do not make timeline components call MapLibre directly.
 
-Remote service rendering is implemented for `wmts`, `wms`, and best-effort GeoJSON `wfs`. Other renderer modules are stubs/loggers.
+Remote service rendering is implemented for `wmts`, `wms`, and best-effort GeoJSON `wfs`. Raster remote services use Belgium bounds to avoid out-of-coverage WMTS/WMS tile requests. Other renderer modules are stubs/loggers.
 
 ## Design Notes
 - Global CSS is only tokens/reset/body defaults.
 - Component-specific styling stays inside that component.
 - Reusable primitives go in `components/base`.
+- Layout/composition components go in `components/layout`.
 - Feature-owned components go in `components/<feature>`.
-- Radius tokens are global because visual rounding must stay consistent.
-- Window colors/border/shadow are local to `Window.svelte`; window radius uses global `--radius-window`.
+- Visual rounding is controlled by global `--control-corner-ratio`.
+- Window colors/border/shadow are local to `Window.svelte`; window radius derives from `--control-corner-ratio`.
+- Canvas-level spacing and control placement live in `Canvas.svelte`.
 
 ## Key Decisions
 - No Allmaps.
