@@ -9,6 +9,8 @@ type RemoteServiceData = {
   endpoint: string
 }
 
+const BELGIUM_BOUNDS: [number, number, number, number] = [2.53, 50.685, 5.92, 51.52]
+
 async function fetchRemoteServiceData(sublayerId: number): Promise<RemoteServiceData> {
   const response = await fetch(`http://localhost:3000/api/remote-services/${sublayerId}`)
 
@@ -55,7 +57,8 @@ function addRasterService({
     map.addSource(sourceId, {
       type: 'raster',
       tiles,
-      tileSize: 256
+      tileSize: 256,
+      bounds: BELGIUM_BOUNDS
     } satisfies SourceSpecification)
   }
 

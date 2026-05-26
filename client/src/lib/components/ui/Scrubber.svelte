@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { clearTimelineLayerFocus } from '$lib/stores/timeline'
-
   let {
     value = $bindable(1800),
     min,
@@ -33,8 +31,6 @@
   }
 
   function handlePointerDown(event: PointerEvent) {
-    event.stopPropagation()
-    clearTimelineLayerFocus()
     dragging = true
     const handle = event.currentTarget as HTMLButtonElement
 
@@ -43,22 +39,16 @@
   }
 
   function handlePointerMove(event: PointerEvent) {
-    event.stopPropagation()
     if (!dragging) return
 
     updateValue(event)
   }
 
   function handlePointerUp(event: PointerEvent) {
-    event.stopPropagation()
     dragging = false
     const handle = event.currentTarget as HTMLButtonElement
 
     handle.releasePointerCapture(event.pointerId)
-  }
-
-  function handleClick(event: MouseEvent) {
-    event.stopPropagation()
   }
 </script>
 
@@ -78,7 +68,6 @@
     onpointermove={handlePointerMove}
     onpointerup={handlePointerUp}
     onpointercancel={handlePointerUp}
-    onclick={handleClick}
   >
     <span class="scrubber-chevron" aria-hidden="true">‹</span>
     <span class="scrubber-year">{value}</span>
@@ -96,7 +85,7 @@
     --scrubber-line-radius: 999px;
     --scrubber-handle-width: 92px;
     --scrubber-handle-height: 34px;
-    --scrubber-float-gap: -15px;
+    --scrubber-float-gap: -20px;
 
     position: absolute;
     top: 0;

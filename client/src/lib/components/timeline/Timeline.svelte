@@ -4,7 +4,9 @@
   import {
     activeLayers,
     activeSublayers,
+    clearTimelineLayerFocus,
     currentYear,
+    deactivatedLayerLabels,
     layers,
     timelineLayers,
     timelineRange,
@@ -16,6 +18,7 @@
 
   const TRACK_HEIGHT = 26
   const BASE_HEIGHT = 24
+  let axisElement: HTMLDivElement
 
   const rangeStart = derived(timelineRange, $t => $t.range_start)
   const totalYears = derived(timelineRange, $t => $t.range_end - $t.range_start)
@@ -34,6 +37,36 @@
   const trackCount = derived(layers, $layers => ($layers.length > 0 ? TIMELINE_MAX_TRACKS : 0))
 
   const axisTop = derived(trackCount, $trackCount => 12 + Math.ceil($trackCount / 2) * TRACK_HEIGHT)
+  const activeLayerLabels = derived(activeLayers, $activeLayers =>
+    new Set($activeLayers.map(layer => layer.label))
+  )
+
+  function handleTimelineClick(event: MouseEvent) {
+    if (!axisElement) return
+
+    clearTimelineLayerFocus()
+
+    const rect = axisElement.getBoundingClientRect()
+    const x = Math.min(rect.width, Math.max(0, event.clientX - rect.left))
+    const percent = x / rect.width
+
+    $currentYear = Math.round($timelineRange.range_start + percent * $totalYears)
+  }
+
+  function handleTimelineKeydown(event: KeyboardEvent) {
+    if (event.key === 'Home') {
+      event.preventDefault()
+      clearTimelineLayerFocus()
+      $currentYear = $timelineRange.range_start
+      return
+    }
+
+    if (event.key === 'End') {
+      event.preventDefault()
+      clearTimelineLayerFocus()
+      $currentYear = $timelineRange.range_end
+    }
+  }
 
   const unsubscribeActiveLayers = activeLayers.subscribe($activeLayers => {
     console.log(
@@ -70,7 +103,19 @@
 
 <div class="timeline" style="height: {BASE_HEIGHT + $trackCount * TRACK_HEIGHT}px;">
   <Window padding={false} style="height: 100%; overflow: visible;">
-    <div class="axis" style="--axis-top: {$axisTop}px;">
+    <div
+      bind:this={axisElement}
+      class="axis"
+      role="slider"
+      tabindex="0"
+      aria-label="Timeline year"
+      aria-valuemin={$timelineRange.range_start}
+      aria-valuemax={$timelineRange.range_end}
+      aria-valuenow={$currentYear}
+      style="--axis-top: {$axisTop}px;"
+      onclick={handleTimelineClick}
+      onkeydown={handleTimelineKeydown}
+    >
       {#each $ticks as tick}
         <div class="tick" style="left: {toPercent(tick)}%">
           <span class="tick-label">{tick}</span>
@@ -80,7 +125,13 @@
         <div class="axis-line"></div>
 
       {#each $timelineLayers as layer}
-        <TimelineLayer {layer} {toPercent} trackCount={$trackCount} />
+        <TimelineLayer
+          {layer}
+          {toPercent}
+          trackCount={$trackCount}
+          active={$activeLayerLabels.has(layer.label)}
+          deactivated={$deactivatedLayerLabels.has(layer.label)}
+        />
       {/each}
 
       <Scrubber

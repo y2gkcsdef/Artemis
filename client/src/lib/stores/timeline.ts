@@ -41,6 +41,7 @@ export const timelineRange = writable<TimelineRange>({
 })
 
 export const currentYear = writable<number>(1791)
+export const focusedLayerLabel = writable<string | null>(null)
 
 export const timelineLayers = derived(layers, $layers => {
   const trackEnds = Array.from({ length: TIMELINE_MAX_TRACKS }, () => Number.NEGATIVE_INFINITY)
@@ -78,10 +79,52 @@ export const timelineLayers = derived(layers, $layers => {
   })
 })
 
-export const activeLayers = derived([timelineLayers, currentYear], ([$timelineLayers, $currentYear]) =>
-  $timelineLayers.filter(
-    layer => layer.visual_start_year <= $currentYear && layer.visual_end_year >= $currentYear
-  )
+function layersOverlap(a: TimelineLayerState, b: TimelineLayerState) {
+  return a.visual_start_year <= b.visual_end_year && a.visual_end_year >= b.visual_start_year
+}
+
+export const deactivatedLayerLabels = derived(
+  [timelineLayers, focusedLayerLabel],
+  ([$timelineLayers, $focusedLayerLabel]) => {
+    if (!$focusedLayerLabel) {
+      return new Set<string>()
+    }
+
+    const focusedLayer = $timelineLayers.find(layer => layer.label === $focusedLayerLabel)
+
+    if (!focusedLayer) {
+      return new Set<string>()
+    }
+
+    return new Set(
+      $timelineLayers
+        .filter(layer => layer.label !== focusedLayer.label && layersOverlap(layer, focusedLayer))
+        .map(layer => layer.label)
+    )
+  }
+)
+
+export const activeLayers = derived(
+  [timelineLayers, currentYear, focusedLayerLabel],
+  ([$timelineLayers, $currentYear, $focusedLayerLabel]) => {
+    const layersUnderScrubber = $timelineLayers.filter(
+      layer => layer.visual_start_year <= $currentYear && layer.visual_end_year >= $currentYear
+    )
+
+    if (!$focusedLayerLabel) {
+      return layersUnderScrubber
+    }
+
+    const focusedLayer = $timelineLayers.find(layer => layer.label === $focusedLayerLabel)
+
+    if (!focusedLayer) {
+      return layersUnderScrubber
+    }
+
+    return layersUnderScrubber.filter(
+      layer => layer.label === focusedLayer.label || !layersOverlap(layer, focusedLayer)
+    )
+  }
 )
 
 export const activeSublayers = derived(activeLayers, $activeLayers =>
@@ -91,6 +134,17 @@ export const activeSublayers = derived(activeLayers, $activeLayers =>
       .toSorted((a, b) => a.sort_order - b.sort_order)
   )
 )
+
+export function focusTimelineLayer(layer: TimelineLayerState) {
+  const layerCenterYear = Math.round((layer.visual_start_year + layer.visual_end_year) / 2)
+
+  focusedLayerLabel.set(layer.label)
+  currentYear.set(layerCenterYear)
+}
+
+export function clearTimelineLayerFocus() {
+  focusedLayerLabel.set(null)
+}
 
 async function fetchSublayers(layerLabel: string): Promise<Sublayer[]> {
   const response = await fetch(
