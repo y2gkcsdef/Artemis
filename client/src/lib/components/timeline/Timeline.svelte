@@ -2,15 +2,17 @@
   import { onDestroy } from 'svelte'
   import { derived } from 'svelte/store'
   import {
-    activeLayers,
-    activeSublayers,
     clearTimelineLayerFocus,
-    currentYear,
-    deactivatedLayerLabels,
+    getActiveLayersStore,
+    getActiveSublayersStore,
+    getCurrentYearStore,
+    getDeactivatedLayerLabelsStore,
     layers,
+    setTimelineYear,
     timelineLayers,
     timelineRange,
-    TIMELINE_MAX_TRACKS
+    TIMELINE_MAX_TRACKS,
+    type TimelineSide
   } from '$lib/stores/timeline'
   import Window from '$lib/components/base/Window.svelte'
   import Scrubber from '$lib/components/timeline/Scrubber.svelte'
@@ -18,6 +20,22 @@
 
   const TRACK_HEIGHT = 26
   const BASE_HEIGHT = 24
+  const { side = 'left', compareEnabled = false } = $props<{
+    side?: TimelineSide
+    compareEnabled?: boolean
+  }>()
+
+  // svelte-ignore state_referenced_locally
+  const currentYear = getCurrentYearStore(side)
+  const compareCurrentYear = getCurrentYearStore('right')
+  // svelte-ignore state_referenced_locally
+  const activeLayers = getActiveLayersStore(side)
+  const compareActiveLayers = getActiveLayersStore('right')
+  // svelte-ignore state_referenced_locally
+  const activeSublayers = getActiveSublayersStore(side)
+  // svelte-ignore state_referenced_locally
+  const deactivatedLayerLabels = getDeactivatedLayerLabelsStore(side)
+  const compareDeactivatedLayerLabels = getDeactivatedLayerLabelsStore('right')
   let axisElement: HTMLDivElement
 
   const rangeStart = derived(timelineRange, $t => $t.range_start)
@@ -40,37 +58,44 @@
   const activeLayerLabels = derived(activeLayers, $activeLayers =>
     new Set($activeLayers.map(layer => layer.label))
   )
+  const compareActiveLayerLabels = derived(compareActiveLayers, $activeLayers =>
+    new Set($activeLayers.map(layer => layer.label))
+  )
 
   function handleTimelineClick(event: MouseEvent) {
     if (!axisElement) return
 
-    clearTimelineLayerFocus()
-
     const rect = axisElement.getBoundingClientRect()
     const x = Math.min(rect.width, Math.max(0, event.clientX - rect.left))
     const percent = x / rect.width
+    const nextYear = Math.round($timelineRange.range_start + percent * $totalYears)
+    const targetSide =
+      compareEnabled && Math.abs(nextYear - $compareCurrentYear) < Math.abs(nextYear - $currentYear)
+        ? 'right'
+        : side
 
-    $currentYear = Math.round($timelineRange.range_start + percent * $totalYears)
+    clearTimelineLayerFocus(targetSide)
+    setTimelineYear(targetSide, nextYear)
   }
 
   function handleTimelineKeydown(event: KeyboardEvent) {
     if (event.key === 'Home') {
       event.preventDefault()
-      clearTimelineLayerFocus()
-      $currentYear = $timelineRange.range_start
+      clearTimelineLayerFocus(side)
+      setTimelineYear(side, $timelineRange.range_start)
       return
     }
 
     if (event.key === 'End') {
       event.preventDefault()
-      clearTimelineLayerFocus()
-      $currentYear = $timelineRange.range_end
+      clearTimelineLayerFocus(side)
+      setTimelineYear(side, $timelineRange.range_end)
     }
   }
 
   const unsubscribeActiveLayers = activeLayers.subscribe($activeLayers => {
     console.log(
-      '[timeline] active layers',
+      `[timeline:${side}] active layers`,
       $activeLayers.map(layer => ({
         label: layer.label,
         start_year: layer.start_year,
@@ -84,7 +109,7 @@
 
   const unsubscribeActiveSublayers = activeSublayers.subscribe($activeSublayers => {
     console.log(
-      '[timeline] active default sublayers',
+      `[timeline:${side}] active default sublayers`,
       $activeSublayers.map(sublayer => ({
         id: sublayer.id,
         layer_label: sublayer.layer_label,
@@ -129,8 +154,12 @@
           {layer}
           {toPercent}
           trackCount={$trackCount}
-          active={$activeLayerLabels.has(layer.label)}
-          deactivated={$deactivatedLayerLabels.has(layer.label)}
+          active={$activeLayerLabels.has(layer.label) ||
+            (compareEnabled && $compareActiveLayerLabels.has(layer.label))}
+          deactivated={$deactivatedLayerLabels.has(layer.label) ||
+            (compareEnabled && $compareDeactivatedLayerLabels.has(layer.label))}
+          {side}
+          {compareEnabled}
         />
       {/each}
 
@@ -138,7 +167,18 @@
         bind:value={$currentYear}
         min={$timelineRange.range_start}
         max={$timelineRange.range_end}
+        {side}
       />
+
+      {#if compareEnabled}
+        <Scrubber
+          bind:value={$compareCurrentYear}
+          min={$timelineRange.range_start}
+          max={$timelineRange.range_end}
+          side="right"
+          class="compare-scrubber"
+        />
+      {/if}
     </div>
   </Window>
 </div>

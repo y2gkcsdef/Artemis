@@ -1,4 +1,4 @@
-import { derived, writable } from 'svelte/store'
+import { derived, get, writable } from 'svelte/store'
 
 export type SublayerType = 'wmts' | 'wms' | 'wfs' | 'iiif_tileserver' | 'parcel' | 'toponym'
 
@@ -30,6 +30,8 @@ export type TimelineRange = {
   range_end: number
 }
 
+export type TimelineSide = 'left' | 'right'
+
 export const TIMELINE_MAX_TRACKS = 4
 export const TIMELINE_LABEL_PADDING_YEARS = 3
 export const TIMELINE_MIN_VISUAL_YEARS = 15
@@ -40,8 +42,13 @@ export const timelineRange = writable<TimelineRange>({
   range_end: 1934
 })
 
-export const currentYear = writable<number>(1791)
-export const focusedLayerLabel = writable<string | null>(null)
+export const leftCurrentYear = writable<number>(1791)
+export const rightCurrentYear = writable<number>(1791)
+export const leftFocusedLayerLabel = writable<string | null>(null)
+export const rightFocusedLayerLabel = writable<string | null>(null)
+
+export const currentYear = leftCurrentYear
+export const focusedLayerLabel = leftFocusedLayerLabel
 
 export const timelineLayers = derived(layers, $layers => {
   const trackEnds = Array.from({ length: TIMELINE_MAX_TRACKS }, () => Number.NEGATIVE_INFINITY)
@@ -83,51 +90,91 @@ function layersOverlap(a: TimelineLayerState, b: TimelineLayerState) {
   return a.visual_start_year <= b.visual_end_year && a.visual_end_year >= b.visual_start_year
 }
 
-export const deactivatedLayerLabels = derived(
-  [timelineLayers, focusedLayerLabel],
+function getFocusedLayer(timelineLayerRows: TimelineLayerState[], focusedLabel: string | null) {
+  if (!focusedLabel) {
+    return null
+  }
+
+  return timelineLayerRows.find(layer => layer.label === focusedLabel) ?? null
+}
+
+function getLayersUnderYear(timelineLayerRows: TimelineLayerState[], year: number) {
+  return timelineLayerRows.filter(
+    layer => layer.visual_start_year <= year && layer.visual_end_year >= year
+  )
+}
+
+function getDeactivatedLayerLabelSet(
+  timelineLayerRows: TimelineLayerState[],
+  focusedLabel: string | null
+) {
+  const focusedLayer = getFocusedLayer(timelineLayerRows, focusedLabel)
+
+  if (!focusedLayer) {
+    return new Set<string>()
+  }
+
+  return new Set(
+    timelineLayerRows
+      .filter(layer => layer.label !== focusedLayer.label && layersOverlap(layer, focusedLayer))
+      .map(layer => layer.label)
+  )
+}
+
+function getActiveTimelineLayers(
+  timelineLayerRows: TimelineLayerState[],
+  year: number,
+  focusedLabel: string | null
+) {
+  const layersUnderScrubber = getLayersUnderYear(timelineLayerRows, year)
+  const focusedLayer = getFocusedLayer(timelineLayerRows, focusedLabel)
+
+  if (!focusedLayer) {
+    return layersUnderScrubber
+  }
+
+  return layersUnderScrubber.filter(
+    layer => layer.label === focusedLayer.label || !layersOverlap(layer, focusedLayer)
+  )
+}
+
+function getLayerCenterYear(layer: TimelineLayerState) {
+  return Math.round((layer.visual_start_year + layer.visual_end_year) / 2)
+}
+
+export const leftDeactivatedLayerLabels = derived(
+  [timelineLayers, leftFocusedLayerLabel],
   ([$timelineLayers, $focusedLayerLabel]) => {
-    if (!$focusedLayerLabel) {
-      return new Set<string>()
-    }
-
-    const focusedLayer = $timelineLayers.find(layer => layer.label === $focusedLayerLabel)
-
-    if (!focusedLayer) {
-      return new Set<string>()
-    }
-
-    return new Set(
-      $timelineLayers
-        .filter(layer => layer.label !== focusedLayer.label && layersOverlap(layer, focusedLayer))
-        .map(layer => layer.label)
-    )
+    return getDeactivatedLayerLabelSet($timelineLayers, $focusedLayerLabel)
   }
 )
 
-export const activeLayers = derived(
-  [timelineLayers, currentYear, focusedLayerLabel],
+export const rightDeactivatedLayerLabels = derived(
+  [timelineLayers, rightFocusedLayerLabel],
+  ([$timelineLayers, $focusedLayerLabel]) => {
+    return getDeactivatedLayerLabelSet($timelineLayers, $focusedLayerLabel)
+  }
+)
+
+export const deactivatedLayerLabels = leftDeactivatedLayerLabels
+
+export const leftActiveLayers = derived(
+  [timelineLayers, leftCurrentYear, leftFocusedLayerLabel],
   ([$timelineLayers, $currentYear, $focusedLayerLabel]) => {
-    const layersUnderScrubber = $timelineLayers.filter(
-      layer => layer.visual_start_year <= $currentYear && layer.visual_end_year >= $currentYear
-    )
-
-    if (!$focusedLayerLabel) {
-      return layersUnderScrubber
-    }
-
-    const focusedLayer = $timelineLayers.find(layer => layer.label === $focusedLayerLabel)
-
-    if (!focusedLayer) {
-      return layersUnderScrubber
-    }
-
-    return layersUnderScrubber.filter(
-      layer => layer.label === focusedLayer.label || !layersOverlap(layer, focusedLayer)
-    )
+    return getActiveTimelineLayers($timelineLayers, $currentYear, $focusedLayerLabel)
   }
 )
 
-export const activeSublayers = derived(activeLayers, $activeLayers =>
+export const rightActiveLayers = derived(
+  [timelineLayers, rightCurrentYear, rightFocusedLayerLabel],
+  ([$timelineLayers, $currentYear, $focusedLayerLabel]) => {
+    return getActiveTimelineLayers($timelineLayers, $currentYear, $focusedLayerLabel)
+  }
+)
+
+export const activeLayers = leftActiveLayers
+
+export const leftActiveSublayers = derived(leftActiveLayers, $activeLayers =>
   $activeLayers.flatMap(layer =>
     layer.sublayers
       .filter(sublayer => sublayer.default_visibility)
@@ -135,15 +182,75 @@ export const activeSublayers = derived(activeLayers, $activeLayers =>
   )
 )
 
-export function focusTimelineLayer(layer: TimelineLayerState) {
-  const layerCenterYear = Math.round((layer.visual_start_year + layer.visual_end_year) / 2)
+export const rightActiveSublayers = derived(rightActiveLayers, $activeLayers =>
+  $activeLayers.flatMap(layer =>
+    layer.sublayers
+      .filter(sublayer => sublayer.default_visibility)
+      .toSorted((a, b) => a.sort_order - b.sort_order)
+  )
+)
 
-  focusedLayerLabel.set(layer.label)
-  currentYear.set(layerCenterYear)
+export const activeSublayers = leftActiveSublayers
+
+export function getCurrentYearStore(side: TimelineSide) {
+  return side === 'left' ? leftCurrentYear : rightCurrentYear
 }
 
-export function clearTimelineLayerFocus() {
-  focusedLayerLabel.set(null)
+export function getActiveLayersStore(side: TimelineSide) {
+  return side === 'left' ? leftActiveLayers : rightActiveLayers
+}
+
+export function getActiveSublayersStore(side: TimelineSide) {
+  return side === 'left' ? leftActiveSublayers : rightActiveSublayers
+}
+
+export function getDeactivatedLayerLabelsStore(side: TimelineSide) {
+  return side === 'left' ? leftDeactivatedLayerLabels : rightDeactivatedLayerLabels
+}
+
+export function focusTimelineLayer(side: TimelineSide, layer: TimelineLayerState) {
+  const layerCenterYear = getLayerCenterYear(layer)
+
+  if (side === 'left') {
+    leftFocusedLayerLabel.set(layer.label)
+    leftCurrentYear.set(layerCenterYear)
+    return
+  }
+
+  rightFocusedLayerLabel.set(layer.label)
+  rightCurrentYear.set(layerCenterYear)
+}
+
+export function focusTimelineLayerNearScrubber(layer: TimelineLayerState) {
+  const layerCenterYear = getLayerCenterYear(layer)
+  const leftDistance = Math.abs(layerCenterYear - get(leftCurrentYear))
+  const rightDistance = Math.abs(layerCenterYear - get(rightCurrentYear))
+  const targetSide: TimelineSide = rightDistance < leftDistance ? 'right' : 'left'
+
+  focusTimelineLayer(targetSide, layer)
+}
+
+export function clearTimelineLayerFocus(side: TimelineSide) {
+  if (side === 'left') {
+    leftFocusedLayerLabel.set(null)
+    return
+  }
+
+  rightFocusedLayerLabel.set(null)
+}
+
+export function setTimelineYear(side: TimelineSide, year: number) {
+  getCurrentYearStore(side).set(year)
+}
+
+export function copyLeftTimelineStateToRight() {
+  const leftYear = get(leftCurrentYear)
+  const { range_start, range_end } = get(timelineRange)
+  const nextLeftYear = range_start < range_end ? Math.min(leftYear, range_end - 1) : leftYear
+
+  leftCurrentYear.set(nextLeftYear)
+  rightCurrentYear.set(Math.min(range_end, nextLeftYear + 1))
+  rightFocusedLayerLabel.set(null)
 }
 
 async function fetchSublayers(layerLabel: string): Promise<Sublayer[]> {

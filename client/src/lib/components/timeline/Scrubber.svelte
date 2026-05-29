@@ -1,21 +1,24 @@
 <script lang="ts">
-  import { clearTimelineLayerFocus } from '$lib/stores/timeline'
+  import { clearTimelineLayerFocus, type TimelineSide } from '$lib/stores/timeline'
 
   let {
     value = $bindable(1800),
     min,
     max,
-    class: className = ''
+    class: className = '',
+    side = 'left'
   } = $props<{
     value?: number
     min: number
     max: number
     class?: string
+    side?: TimelineSide
   }>()
 
   let scrubberElement: HTMLDivElement
   let dragging = $state(false)
 
+  const ariaLabel = $derived(`${side === 'left' ? 'Left' : 'Right'} selected year ${value}`)
   const span = $derived(Math.max(1, max - min))
   const percent = $derived(((value - min) / span) * 100)
   const clampedPercent = $derived(Math.min(100, Math.max(0, percent)))
@@ -34,7 +37,7 @@
 
   function handlePointerDown(event: PointerEvent) {
     event.stopPropagation()
-    clearTimelineLayerFocus()
+    clearTimelineLayerFocus(side)
     dragging = true
     const handle = event.currentTarget as HTMLButtonElement
 
@@ -73,7 +76,7 @@
   <button
     class="scrubber-handle"
     type="button"
-    aria-label="Selected year {value}"
+    aria-label={ariaLabel}
     onpointerdown={handlePointerDown}
     onpointermove={handlePointerMove}
     onpointerup={handlePointerUp}
@@ -135,6 +138,13 @@
 
   .scrubber.is-dragging .scrubber-handle {
     cursor: grabbing;
+  }
+
+  .scrubber.compare-scrubber {
+    --scrubber-color: #1f7a5a;
+    --scrubber-bg: #f0fff8;
+
+    z-index: 11;
   }
 
   .scrubber-year {

@@ -5,6 +5,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import cors from 'cors'
 import layersRouter from './routes/layers.js'
+import iiifTileserversRouter from './routes/iiifTileservers.js'
 import remoteServicesRouter from './routes/remoteServices.js'
 import sublayersRouter from './routes/sublayers.js'
 
@@ -34,11 +35,9 @@ const pool = new pg.Pool({
   password: process.env.DB_PASSWORD,
 })
 
-// Static tiles
-app.use('/tiles', express.static(path.join(__dirname, '../../../tiles')))
-
 // Routes
 app.use('/api/layers', layersRouter(pool))
+app.use('/api/iiif-tileservers', iiifTileserversRouter(pool))
 app.use('/api/remote-services', remoteServicesRouter(pool))
 app.use('/api/sublayers', sublayersRouter(pool))
 

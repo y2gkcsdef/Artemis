@@ -1,5 +1,7 @@
 :root {
-  --control-corner-ratio: 6;
+  --radius-sm: 5px;
+  --radius-pill: 999px;
+  --control-corner-ratio: 7;
   --font-ui: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
 }

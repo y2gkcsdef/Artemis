@@ -1,28 +1,49 @@
 <script lang="ts">
+  import type maplibregl from 'maplibre-gl'
   import Button from '$lib/components/base/Button.svelte'
   import MapCanvas from '$lib/components/map/Mapcanvas.svelte'
   import Timeline from '$lib/components/timeline/Timeline.svelte'
+  import { syncMapCameras } from '$lib/components/layout/mapSync'
   import { compareEnabled, toggleCompare } from '$lib/stores/workspace'
+
+  let leftMap = $state<maplibregl.Map | null>(null)
+  let rightMap = $state<maplibregl.Map | null>(null)
+
+  $effect(() => {
+    if (!$compareEnabled || !leftMap || !rightMap) return
+
+    return syncMapCameras(leftMap, rightMap)
+  })
 </script>
 
 <main class="canvas">
   <div class="workspace-layer" class:is-compare={$compareEnabled}>
     <section class="workspace-pane workspace-pane-left" aria-label="Left workspace pane">
       <div class="pane-content">
-        <MapCanvas />
+        <MapCanvas
+          side="left"
+          onMapReady={map => (leftMap = map)}
+          onMapDestroy={() => (leftMap = null)}
+        />
       </div>
     </section>
 
     {#if $compareEnabled}
       <section class="workspace-pane workspace-pane-right" aria-label="Right workspace pane">
-        <div class="pane-content"></div>
+        <div class="pane-content">
+          <MapCanvas
+            side="right"
+            onMapReady={map => (rightMap = map)}
+            onMapDestroy={() => (rightMap = null)}
+          />
+        </div>
       </section>
     {/if}
   </div>
 
   <div class="overlay-layer">
     <div class="window-slot timeline-slot">
-      <Timeline />
+      <Timeline side="left" compareEnabled={$compareEnabled} />
     </div>
 
     <div class="window-slot compare-control-slot">

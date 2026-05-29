@@ -1,16 +1,23 @@
 <script lang="ts">
-  import { focusTimelineLayer, type TimelineLayerState } from '$lib/stores/timeline'
+  import {
+    focusTimelineLayer,
+    focusTimelineLayerNearScrubber,
+    type TimelineLayerState,
+    type TimelineSide
+  } from '$lib/stores/timeline'
 
   const TRACK_HEIGHT = 26
   const AXIS_OFFSET = 12
   const BELOW_AXIS_GAP = 7
 
-  const { layer, toPercent, trackCount, active, deactivated } = $props<{
+  const { layer, toPercent, trackCount, active, deactivated, side, compareEnabled = false } = $props<{
     layer: TimelineLayerState
     toPercent: (year: number) => number
     trackCount: number
     active: boolean
     deactivated: boolean
+    side: TimelineSide
+    compareEnabled?: boolean
   }>()
 
   const axisTop = $derived(AXIS_OFFSET + Math.ceil(trackCount / 2) * TRACK_HEIGHT)
@@ -42,7 +49,12 @@
 
   function handleLayerClick(event: MouseEvent) {
     event.stopPropagation()
-    focusTimelineLayer(layer)
+    if (compareEnabled) {
+      focusTimelineLayerNearScrubber(layer)
+      return
+    }
+
+    focusTimelineLayer(side, layer)
   }
 
   function handleLayerKeydown(event: KeyboardEvent) {
@@ -50,7 +62,12 @@
 
     event.preventDefault()
     event.stopPropagation()
-    focusTimelineLayer(layer)
+    if (compareEnabled) {
+      focusTimelineLayerNearScrubber(layer)
+      return
+    }
+
+    focusTimelineLayer(side, layer)
   }
 </script>
 
@@ -77,8 +94,8 @@
 <style>
   .layer-block {
     /* Color */
-    --layer-color-min: rgb(80, 58, 167);
-    --layer-color-max: rgb(32, 181, 92);
+    --layer-color-min: rgb(223, 188, 75);
+    --layer-color-max: rgb(59, 181, 32);
 
     /* Animation */
     --layer-pop-distance: 10px;

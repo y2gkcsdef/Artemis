@@ -1,8 +1,13 @@
-import { writable } from 'svelte/store'
+import { get, writable } from 'svelte/store'
+import { copyLeftTimelineStateToRight } from '$lib/stores/timeline'
 
 export const compareEnabled = writable(false)
 
 export function enableCompare() {
+  if (!get(compareEnabled)) {
+    copyLeftTimelineStateToRight()
+  }
+
   compareEnabled.set(true)
 }
 
@@ -11,5 +16,10 @@ export function disableCompare() {
 }
 
 export function toggleCompare() {
-  compareEnabled.update(enabled => !enabled)
+  if (get(compareEnabled)) {
+    disableCompare()
+    return
+  }
+
+  enableCompare()
 }
