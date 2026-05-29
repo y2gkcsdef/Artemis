@@ -31,6 +31,7 @@ export type TimelineRange = {
 }
 
 export type TimelineSide = 'left' | 'right'
+export type SublayerVisibilityOverrides = Record<number, boolean>
 
 export const TIMELINE_MAX_TRACKS = 4
 export const TIMELINE_LABEL_PADDING_YEARS = 3
@@ -46,6 +47,8 @@ export const leftCurrentYear = writable<number>(1791)
 export const rightCurrentYear = writable<number>(1791)
 export const leftFocusedLayerLabel = writable<string | null>(null)
 export const rightFocusedLayerLabel = writable<string | null>(null)
+export const leftSublayerVisibilityOverrides = writable<SublayerVisibilityOverrides>({})
+export const rightSublayerVisibilityOverrides = writable<SublayerVisibilityOverrides>({})
 
 export const currentYear = leftCurrentYear
 export const focusedLayerLabel = leftFocusedLayerLabel
@@ -142,6 +145,24 @@ function getLayerCenterYear(layer: TimelineLayerState) {
   return Math.round((layer.visual_start_year + layer.visual_end_year) / 2)
 }
 
+export function isSublayerVisible(
+  sublayer: Sublayer,
+  visibilityOverrides: SublayerVisibilityOverrides
+) {
+  return visibilityOverrides[sublayer.id] ?? sublayer.default_visibility
+}
+
+function getVisibleSublayers(
+  activeLayerRows: TimelineLayerState[],
+  visibilityOverrides: SublayerVisibilityOverrides
+) {
+  return activeLayerRows.flatMap(layer =>
+    layer.sublayers
+      .filter(sublayer => isSublayerVisible(sublayer, visibilityOverrides))
+      .toSorted((a, b) => a.sort_order - b.sort_order)
+  )
+}
+
 export const leftDeactivatedLayerLabels = derived(
   [timelineLayers, leftFocusedLayerLabel],
   ([$timelineLayers, $focusedLayerLabel]) => {
@@ -204,8 +225,28 @@ export function getActiveSublayersStore(side: TimelineSide) {
   return side === 'left' ? leftActiveSublayers : rightActiveSublayers
 }
 
+export function getSublayerVisibilityOverridesStore(side: TimelineSide) {
+  return side === 'left' ? leftSublayerVisibilityOverrides : rightSublayerVisibilityOverrides
+}
+
 export function getDeactivatedLayerLabelsStore(side: TimelineSide) {
   return side === 'left' ? leftDeactivatedLayerLabels : rightDeactivatedLayerLabels
+}
+
+export function setSublayerVisibility(
+  side: TimelineSide,
+  sublayerId: number,
+  visible: boolean
+) {
+  getSublayerVisibilityOverridesStore(side).update(overrides => ({
+    ...overrides,
+    [sublayerId]: visible
+  }))
+}
+
+export function toggleSublayerVisibility(side: TimelineSide, sublayer: Sublayer) {
+  const overrides = get(getSublayerVisibilityOverridesStore(side))
+  setSublayerVisibility(side, sublayer.id, !isSublayerVisible(sublayer, overrides))
 }
 
 export function focusTimelineLayer(side: TimelineSide, layer: TimelineLayerState) {

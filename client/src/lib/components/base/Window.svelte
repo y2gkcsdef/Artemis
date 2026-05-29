@@ -20,11 +20,11 @@
 
 <style>
   .window {
-    --window-bg: rgb(240, 247, 226);
+    --window-bg: rgb(245, 247, 226);
     --window-border: 2px solid rgba(0, 26, 104, 0.1);
     --window-corner-size: 42px;
     --window-radius: calc(var(--window-corner-size) / var(--control-corner-ratio));
-    --window-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --window-shadow: 0px 0px 20px rgba(0, 0, 0, .1);
 
     background: var(--window-bg);
     border: var(--window-border);

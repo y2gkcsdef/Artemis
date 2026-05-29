@@ -50,6 +50,15 @@
     map.on('load', () => {
       rendererManager = createRendererManager(map)
       unsubscribeActiveSublayers = activeSublayers.subscribe($activeSublayers => {
+        const activeSublayerSummary = $activeSublayers
+          .map(
+            sublayer =>
+              `${sublayer.id}:${sublayer.type}:${sublayer.layer_label}/${sublayer.label}:default=${sublayer.default_visibility}:sort=${sublayer.sort_order}`
+          )
+          .join(' | ')
+
+        console.log(`[map:${side}] reconcile active sublayers: ${activeSublayerSummary || 'none'}`)
+
         rendererManager?.reconcile($activeSublayers).catch(err => {
           console.error('[map-renderer] failed to reconcile active sublayers', err)
         })

@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { onDestroy } from 'svelte'
   import { derived } from 'svelte/store'
   import {
     clearTimelineLayerFocus,
     getActiveLayersStore,
-    getActiveSublayersStore,
     getCurrentYearStore,
     getDeactivatedLayerLabelsStore,
     layers,
@@ -12,6 +10,7 @@
     timelineLayers,
     timelineRange,
     TIMELINE_MAX_TRACKS,
+    type TimelineLayerState,
     type TimelineSide
   } from '$lib/stores/timeline'
   import Window from '$lib/components/base/Window.svelte'
@@ -32,11 +31,10 @@
   const activeLayers = getActiveLayersStore(side)
   const compareActiveLayers = getActiveLayersStore('right')
   // svelte-ignore state_referenced_locally
-  const activeSublayers = getActiveSublayersStore(side)
-  // svelte-ignore state_referenced_locally
   const deactivatedLayerLabels = getDeactivatedLayerLabelsStore(side)
   const compareDeactivatedLayerLabels = getDeactivatedLayerLabelsStore('right')
   let axisElement: HTMLDivElement
+  let openLayerMenuLabel = $state<string | null>(null)
 
   const rangeStart = derived(timelineRange, $t => $t.range_start)
   const totalYears = derived(timelineRange, $t => $t.range_end - $t.range_start)
@@ -64,6 +62,8 @@
 
   function handleTimelineClick(event: MouseEvent) {
     if (!axisElement) return
+
+    openLayerMenuLabel = null
 
     const rect = axisElement.getBoundingClientRect()
     const x = Math.min(rect.width, Math.max(0, event.clientX - rect.left))
@@ -93,37 +93,13 @@
     }
   }
 
-  const unsubscribeActiveLayers = activeLayers.subscribe($activeLayers => {
-    console.log(
-      `[timeline:${side}] active layers`,
-      $activeLayers.map(layer => ({
-        label: layer.label,
-        start_year: layer.start_year,
-        end_year: layer.end_year,
-        visual_start_year: layer.visual_start_year,
-        visual_end_year: layer.visual_end_year,
-        track: layer.track
-      }))
-    )
-  })
+  function handleLayerMenuToggle(layer: TimelineLayerState) {
+    openLayerMenuLabel = openLayerMenuLabel === layer.label ? null : layer.label
+  }
 
-  const unsubscribeActiveSublayers = activeSublayers.subscribe($activeSublayers => {
-    console.log(
-      `[timeline:${side}] active default sublayers`,
-      $activeSublayers.map(sublayer => ({
-        id: sublayer.id,
-        layer_label: sublayer.layer_label,
-        label: sublayer.label,
-        type: sublayer.type,
-        sort_order: sublayer.sort_order
-      }))
-    )
-  })
-
-  onDestroy(() => {
-    unsubscribeActiveLayers()
-    unsubscribeActiveSublayers()
-  })
+  function closeLayerMenu() {
+    openLayerMenuLabel = null
+  }
 </script>
 
 <div class="timeline" style="height: {BASE_HEIGHT + $trackCount * TRACK_HEIGHT}px;">
@@ -160,6 +136,9 @@
             (compareEnabled && $compareDeactivatedLayerLabels.has(layer.label))}
           {side}
           {compareEnabled}
+          menuOpen={openLayerMenuLabel === layer.label}
+          onMenuToggle={handleLayerMenuToggle}
+          onMenuClose={closeLayerMenu}
         />
       {/each}
 
@@ -204,7 +183,7 @@
     top: var(--axis-top);
     left: 0;
     right: 0;
-    height: 1.5px;
+    height: 5px;
     background: rgba(0, 0, 0, 0.15);
   }
 
