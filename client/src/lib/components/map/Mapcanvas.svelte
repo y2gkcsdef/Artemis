@@ -4,6 +4,7 @@
   import maplibregl from 'maplibre-gl'
   import 'maplibre-gl/dist/maplibre-gl.css'
   import { getActiveSublayersStore, type TimelineSide } from '$lib/stores/timeline'
+  import { clearIiifMaskWindows, mapFocusRequest } from '$lib/stores/workspace'
   import { createRendererManager } from '$lib/components/map/renderers/manager'
 
   const { side = 'left', onMapReady, onMapDestroy } = $props<{
@@ -18,6 +19,7 @@
   let map: maplibregl.Map
   let resizeObserver: ResizeObserver | undefined
   let unsubscribeActiveSublayers: Unsubscriber | undefined
+  let unsubscribeMapFocusRequest: Unsubscriber | undefined
   let rendererManager: ReturnType<typeof createRendererManager> | undefined
 
   onMount(() => {
@@ -48,7 +50,7 @@
     onMapReady?.(map)
 
     map.on('load', () => {
-      rendererManager = createRendererManager(map)
+      rendererManager = createRendererManager(map, side)
       unsubscribeActiveSublayers = activeSublayers.subscribe($activeSublayers => {
         const activeSublayerSummary = $activeSublayers
           .map(
@@ -65,6 +67,19 @@
       })
     })
 
+    unsubscribeMapFocusRequest = mapFocusRequest.subscribe(request => {
+      if (!request || request.side !== side || !map.loaded()) return
+
+      map.flyTo({
+        center: [request.lon, request.lat],
+        zoom: request.zoom,
+        essential: true
+      })
+    })
+
+    map.on('dragstart', clearIiifMaskWindows)
+    map.on('zoomstart', clearIiifMaskWindows)
+
     resizeObserver = new ResizeObserver(() => {
       map.resize()
     })
@@ -77,9 +92,12 @@
     }
     resizeObserver?.disconnect()
     unsubscribeActiveSublayers?.()
+    unsubscribeMapFocusRequest?.()
     rendererManager?.clear().catch(err => {
       console.error('[map-renderer] failed to clear rendered sublayers', err)
     })
+    map?.off('dragstart', clearIiifMaskWindows)
+    map?.off('zoomstart', clearIiifMaskWindows)
     map?.remove()
   })
 </script>

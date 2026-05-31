@@ -195,20 +195,16 @@ export const rightActiveLayers = derived(
 
 export const activeLayers = leftActiveLayers
 
-export const leftActiveSublayers = derived(leftActiveLayers, $activeLayers =>
-  $activeLayers.flatMap(layer =>
-    layer.sublayers
-      .filter(sublayer => sublayer.default_visibility)
-      .toSorted((a, b) => a.sort_order - b.sort_order)
-  )
+export const leftActiveSublayers = derived(
+  [leftActiveLayers, leftSublayerVisibilityOverrides],
+  ([$activeLayers, $visibilityOverrides]) =>
+    getVisibleSublayers($activeLayers, $visibilityOverrides)
 )
 
-export const rightActiveSublayers = derived(rightActiveLayers, $activeLayers =>
-  $activeLayers.flatMap(layer =>
-    layer.sublayers
-      .filter(sublayer => sublayer.default_visibility)
-      .toSorted((a, b) => a.sort_order - b.sort_order)
-  )
+export const rightActiveSublayers = derived(
+  [rightActiveLayers, rightSublayerVisibilityOverrides],
+  ([$activeLayers, $visibilityOverrides]) =>
+    getVisibleSublayers($activeLayers, $visibilityOverrides)
 )
 
 export const activeSublayers = leftActiveSublayers
@@ -260,6 +256,14 @@ export function focusTimelineLayer(side: TimelineSide, layer: TimelineLayerState
 
   rightFocusedLayerLabel.set(layer.label)
   rightCurrentYear.set(layerCenterYear)
+}
+
+export function focusTimelineLayerByLabel(side: TimelineSide, layerLabel: string) {
+  const layer = get(timelineLayers).find(timelineLayer => timelineLayer.label === layerLabel)
+
+  if (!layer) return
+
+  focusTimelineLayer(side, layer)
 }
 
 export function focusTimelineLayerNearScrubber(layer: TimelineLayerState) {

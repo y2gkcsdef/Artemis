@@ -5,8 +5,10 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import cors from 'cors'
 import layersRouter from './routes/layers.js'
+import geojsonRouter from './routes/geojson.js'
 import iiifTileserversRouter from './routes/iiifTileservers.js'
 import remoteServicesRouter from './routes/remoteServices.js'
+import searchRouter from './routes/search.js'
 import sublayersRouter from './routes/sublayers.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -37,8 +39,10 @@ const pool = new pg.Pool({
 
 // Routes
 app.use('/api/layers', layersRouter(pool))
+app.use('/api/geojson', geojsonRouter(pool))
 app.use('/api/iiif-tileservers', iiifTileserversRouter(pool))
 app.use('/api/remote-services', remoteServicesRouter(pool))
+app.use('/api/search', searchRouter(pool))
 app.use('/api/sublayers', sublayersRouter(pool))
 
 // Health check

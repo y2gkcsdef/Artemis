@@ -1,4 +1,4 @@
-import type { SublayerRenderer } from './types'
+import type { SublayerRenderer } from './helpers/types'
 
 export const toponymRenderer: SublayerRenderer = {
   render({ sublayer, resolved }) {

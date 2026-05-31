@@ -1,21 +1,35 @@
-import type { SublayerRenderer } from './types'
+import {
+  addGeojsonPolygonOverlay,
+  fetchGeojsonData,
+  removeGeojsonPolygonOverlay
+} from './geojsonOverlay'
+import type { SublayerRenderer } from './helpers/types'
+
+const PARCEL_SOURCE_PREFIX = 'parcel'
 
 export const parcelRenderer: SublayerRenderer = {
-  render({ sublayer, resolved }) {
-    console.log('[map-renderer] render parcel', {
+  async render({ map, sublayer }) {
+    const data = await fetchGeojsonData('parcel', sublayer.id)
+
+    addGeojsonPolygonOverlay({
+      map,
       id: sublayer.id,
-      label: sublayer.label,
-      type: resolved.type,
-      table: resolved.table
+      data,
+      style: {
+        sourcePrefix: PARCEL_SOURCE_PREFIX,
+        fillColor: '#c48a3f',
+        fillOpacity: 0.18,
+        lineColor: '#6f4a1f',
+        lineOpacity: 0.72
+      }
     })
   },
 
-  remove({ sublayer, resolved }) {
-    console.log('[map-renderer] remove parcel', {
+  remove({ map, sublayer }) {
+    removeGeojsonPolygonOverlay({
+      map,
       id: sublayer.id,
-      label: sublayer.label,
-      type: resolved.type,
-      table: resolved.table
+      sourcePrefix: PARCEL_SOURCE_PREFIX
     })
   }
 }

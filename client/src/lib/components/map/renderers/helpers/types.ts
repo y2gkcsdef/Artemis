@@ -1,5 +1,5 @@
 import type maplibregl from 'maplibre-gl'
-import type { Sublayer, SublayerType } from '$lib/stores/timeline'
+import type { Sublayer, SublayerType, TimelineSide } from '$lib/stores/timeline'
 
 export type ResolvedSublayer = {
   id: number
@@ -9,6 +9,7 @@ export type ResolvedSublayer = {
 
 export type RenderContext = {
   map: maplibregl.Map
+  side: TimelineSide
   sublayer: Sublayer
   resolved: ResolvedSublayer
 }

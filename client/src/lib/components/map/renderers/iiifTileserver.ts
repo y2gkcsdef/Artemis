@@ -1,6 +1,7 @@
 import type maplibregl from 'maplibre-gl'
 import type { LayerSpecification, SourceSpecification } from 'maplibre-gl'
-import type { SublayerRenderer } from './types'
+import { removeIiifMask, renderIiifMask } from './iiifMask'
+import type { SublayerRenderer } from './helpers/types'
 
 type IiifTileserverData = {
   id: number
@@ -80,7 +81,7 @@ function addRasterTiles({
 }
 
 export const iiifTileserverRenderer: SublayerRenderer = {
-  async render({ map, sublayer, resolved }) {
+  async render({ map, side, sublayer, resolved }) {
     const tileserver = await fetchIiifTileserverData(sublayer.id)
 
     if (!tileserver.tileserver_url) {
@@ -98,11 +99,22 @@ export const iiifTileserverRenderer: SublayerRenderer = {
       id: sublayer.id,
       tileserverUrl: tileserver.tileserver_url
     })
+
+    await renderIiifMask({
+      map,
+      side,
+      sublayerId: sublayer.id
+    })
   },
 
   remove({ map, sublayer }) {
     const layerId = getLayerId(sublayer.id)
     const sourceId = getSourceId(sublayer.id)
+
+    removeIiifMask({
+      map,
+      sublayerId: sublayer.id
+    })
 
     if (map.getLayer(layerId)) {
       map.removeLayer(layerId)

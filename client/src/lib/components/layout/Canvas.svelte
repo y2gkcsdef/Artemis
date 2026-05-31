@@ -1,56 +1,98 @@
 <script lang="ts">
   import type maplibregl from 'maplibre-gl'
   import Button from '$lib/components/base/Button.svelte'
+  import IiifViewer from '$lib/components/iiif/IiifViewer.svelte'
+  import IiifMaskWindow from '$lib/components/map/IiifMaskWindow.svelte'
   import MapCanvas from '$lib/components/map/Mapcanvas.svelte'
+  import SearchMenu from '$lib/components/search/SearchMenu.svelte'
   import Timeline from '$lib/components/timeline/Timeline.svelte'
   import { syncMapCameras } from '$lib/components/layout/mapSync'
-  import { compareEnabled, toggleCompare } from '$lib/stores/workspace'
+  import {
+    iiifMaskWindows,
+    iiifViewerOverlay,
+    leftPaneContent,
+    mapCompareEnabled,
+    rightPaneContent,
+    toggleCompare,
+    workspaceSplitEnabled
+  } from '$lib/stores/workspace'
 
   let leftMap = $state<maplibregl.Map | null>(null)
   let rightMap = $state<maplibregl.Map | null>(null)
+  const timelineSide = $derived($leftPaneContent.kind === 'map' ? 'left' : 'right')
 
   $effect(() => {
-    if (!$compareEnabled || !leftMap || !rightMap) return
+    if (!$mapCompareEnabled || !leftMap || !rightMap) return
 
     return syncMapCameras(leftMap, rightMap)
   })
 </script>
 
 <main class="canvas">
-  <div class="workspace-layer" class:is-compare={$compareEnabled}>
+  <div class="workspace-layer" class:is-compare={$workspaceSplitEnabled}>
     <section class="workspace-pane workspace-pane-left" aria-label="Left workspace pane">
       <div class="pane-content">
-        <MapCanvas
-          side="left"
-          onMapReady={map => (leftMap = map)}
-          onMapDestroy={() => (leftMap = null)}
-        />
+        {#if $leftPaneContent.kind === 'map'}
+          <MapCanvas
+            side="left"
+            onMapReady={map => (leftMap = map)}
+            onMapDestroy={() => (leftMap = null)}
+          />
+        {:else}
+          <IiifViewer side="left" manifest={$leftPaneContent.manifest} label={$leftPaneContent.label} />
+        {/if}
+        {#if $iiifViewerOverlay?.side === 'left'}
+          <IiifViewer
+            side="left"
+            manifest={$iiifViewerOverlay.manifest}
+            label={$iiifViewerOverlay.label}
+          />
+        {/if}
       </div>
     </section>
 
-    {#if $compareEnabled}
+    {#if $workspaceSplitEnabled}
       <section class="workspace-pane workspace-pane-right" aria-label="Right workspace pane">
         <div class="pane-content">
-          <MapCanvas
-            side="right"
-            onMapReady={map => (rightMap = map)}
-            onMapDestroy={() => (rightMap = null)}
-          />
+          {#if $rightPaneContent.kind === 'map'}
+            <MapCanvas
+              side="right"
+              onMapReady={map => (rightMap = map)}
+              onMapDestroy={() => (rightMap = null)}
+            />
+          {:else}
+            <IiifViewer side="right" manifest={$rightPaneContent.manifest} label={$rightPaneContent.label} />
+          {/if}
+          {#if $iiifViewerOverlay?.side === 'right'}
+            <IiifViewer
+              side="right"
+              manifest={$iiifViewerOverlay.manifest}
+              label={$iiifViewerOverlay.label}
+            />
+          {/if}
         </div>
       </section>
     {/if}
   </div>
 
   <div class="overlay-layer">
+    <div class="window-slot search-slot">
+      <SearchMenu />
+    </div>
+
     <div class="window-slot timeline-slot">
-      <Timeline side="left" compareEnabled={$compareEnabled} />
+      <Timeline side={timelineSide} compareEnabled={$mapCompareEnabled} />
     </div>
 
     <div class="window-slot compare-control-slot">
-      <Button class="compare-button" aria-pressed={$compareEnabled} onclick={toggleCompare}>
-        {$compareEnabled ? 'Close compare' : 'Compare'}
+      <Button class="compare-button" aria-pressed={$mapCompareEnabled} onclick={toggleCompare}>
+        {$mapCompareEnabled ? 'Close compare' : 'Compare'}
       </Button>
     </div>
+
+    {#each $iiifMaskWindows as mask (mask.id)}
+      <IiifMaskWindow {mask} />
+    {/each}
   </div>
 </main>
 
@@ -112,6 +154,13 @@
     left: 0;
     right: 0;
     bottom: 0;
+  }
+
+  .search-slot {
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
   }
 
   .compare-control-slot {

@@ -1,6 +1,6 @@
 import type maplibregl from 'maplibre-gl'
 import type { LayerSpecification, SourceSpecification } from 'maplibre-gl'
-import type { SublayerRenderer } from './types'
+import type { SublayerRenderer } from './helpers/types'
 
 type RemoteServiceData = {
   id: number

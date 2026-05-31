@@ -1,10 +1,10 @@
 import type maplibregl from 'maplibre-gl'
-import type { Sublayer } from '$lib/stores/timeline'
-import { sublayerRenderers } from './registry'
-import { resolveSublayer } from './resolveSublayer'
-import type { ResolvedSublayer } from './types'
+import type { Sublayer, TimelineSide } from '$lib/stores/timeline'
+import { sublayerRenderers } from './helpers/registry'
+import { resolveSublayer } from './helpers/resolveSublayer'
+import type { ResolvedSublayer } from './helpers/types'
 
-export function createRendererManager(map: maplibregl.Map) {
+export function createRendererManager(map: maplibregl.Map, side: TimelineSide) {
   const rendered = new Map<number, { sublayer: Sublayer; resolved: ResolvedSublayer }>()
   let version = 0
 
@@ -15,7 +15,7 @@ export function createRendererManager(map: maplibregl.Map) {
 
     const renderer = sublayerRenderers[resolved.type]
 
-    await renderer.render({ map, sublayer, resolved })
+    await renderer.render({ map, side, sublayer, resolved })
     rendered.set(sublayer.id, { sublayer, resolved })
   }
 
@@ -29,6 +29,7 @@ export function createRendererManager(map: maplibregl.Map) {
         const renderer = sublayerRenderers[renderedSublayer.resolved.type]
         await renderer.remove({
           map,
+          side,
           sublayer: renderedSublayer.sublayer,
           resolved: renderedSublayer.resolved
         })
@@ -50,6 +51,7 @@ export function createRendererManager(map: maplibregl.Map) {
       const renderer = sublayerRenderers[renderedSublayer.resolved.type]
       await renderer.remove({
         map,
+        side,
         sublayer: renderedSublayer.sublayer,
         resolved: renderedSublayer.resolved
       })
