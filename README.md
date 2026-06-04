@@ -55,7 +55,13 @@ Then grant read access:
 ```sql
 GRANT CONNECT ON DATABASE "Artemis" TO artemis_reader;
 GRANT USAGE ON SCHEMA public TO artemis_reader;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO artemis_reader;
+GRANT SELECT ON TABLE public.layer TO artemis_reader;
+GRANT SELECT ON TABLE public.sublayer TO artemis_reader;
+GRANT SELECT ON TABLE public.remote_service TO artemis_reader;
+GRANT SELECT ON TABLE public.iiif_tileserver TO artemis_reader;
+GRANT SELECT ON TABLE public.iiif_mask TO artemis_reader;
+GRANT SELECT ON TABLE public.parcel TO artemis_reader;
+GRANT SELECT ON TABLE public.toponym TO artemis_reader;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO artemis_reader;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
@@ -63,6 +69,12 @@ GRANT SELECT ON TABLES TO artemis_reader;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT USAGE, SELECT ON SEQUENCES TO artemis_reader;
+```
+
+You can verify the table grant with:
+
+```sql
+SELECT has_table_privilege('artemis_reader', 'public.layer', 'SELECT');
 ```
 
 If your database name, port, user, or password differs, adjust `server/.env` to match.
