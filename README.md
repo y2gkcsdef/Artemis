@@ -43,8 +43,10 @@ Native Windows Command Prompt:
 Dump\restore-artemis.cmd
 ```
 
-The API only needs read access. After restoring the dump, create the read-only application user
-first:
+The API only needs read access. After restoring the dump, run these SQL blocks as a PostgreSQL
+admin user while connected to the `Artemis` database.
+
+Create the application user first:
 
 ```sql
 CREATE USER artemis_reader WITH PASSWORD 'readonly';
@@ -55,13 +57,7 @@ Then grant read access:
 ```sql
 GRANT CONNECT ON DATABASE "Artemis" TO artemis_reader;
 GRANT USAGE ON SCHEMA public TO artemis_reader;
-GRANT SELECT ON TABLE public.layer TO artemis_reader;
-GRANT SELECT ON TABLE public.sublayer TO artemis_reader;
-GRANT SELECT ON TABLE public.remote_service TO artemis_reader;
-GRANT SELECT ON TABLE public.iiif_tileserver TO artemis_reader;
-GRANT SELECT ON TABLE public.iiif_mask TO artemis_reader;
-GRANT SELECT ON TABLE public.parcel TO artemis_reader;
-GRANT SELECT ON TABLE public.toponym TO artemis_reader;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO artemis_reader;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO artemis_reader;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
@@ -75,6 +71,7 @@ You can verify the table grant with:
 
 ```sql
 SELECT has_table_privilege('artemis_reader', 'public.layer', 'SELECT');
+SELECT has_table_privilege('artemis_reader', 'public.sublayer', 'SELECT');
 ```
 
 If your database name, port, user, or password differs, adjust `server/.env` to match.
