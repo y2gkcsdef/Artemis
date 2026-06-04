@@ -26,22 +26,21 @@ The repository uses a PostgreSQL custom-format dump for database initialization:
 Dump/artemis_init.dump
 ```
 
-Custom format is restored with `pg_restore`
+Custom format is restored with `pg_restore`. It avoids raw SQL runner issues with PostgreSQL
+meta-commands and supports recreating the database with `--create`.
 
-Restore the database with an admin PostgreSQL user:
+Restore the database with an admin PostgreSQL user.
+
+Linux, macOS, or WSL:
 
 ```bash
-pg_restore \
-  --host=localhost \
-  --port=5432 \
-  --username=postgres \
-  --dbname=postgres \
-  --clean \
-  --if-exists \
-  --create \
-  --no-owner \
-  --no-privileges \
-  Dump/artemis_init.dump
+./Dump/restore-artemis.sh
+```
+
+Native Windows Command Prompt:
+
+```bat
+Dump\restore-artemis.cmd
 ```
 
 The API only needs read access. After restoring the dump, create the read-only application user:
