@@ -7,7 +7,7 @@ Artemis is a historical map viewer for the Scheldt/Schelde region. The public-fa
 - Node.js `20.19+` or `22.12+`
 - pnpm `11.x`
 - PostgreSQL with PostGIS
-- Optional for local XYZ tiles: Nginx
+- Optional local XYZ tiles are served with the included Node tile server
 
 ## Project Structure
 
@@ -15,7 +15,7 @@ Artemis is a historical map viewer for the Scheldt/Schelde region. The public-fa
 Artemis/
 ├── client/   # SvelteKit frontend
 ├── server/   # Express API
-└── Tiles/    # optional local XYZ tiles and Nginx config
+└── Tiles/    # optional local XYZ tiles and tile server helpers
 ```
 
 ## PostgreSQL Setup
@@ -137,21 +137,12 @@ pnpm build
 
 ## Local Tile Server
 
-Large local XYZ tile folders are served by Nginx from `Tiles/`, not by the Express API. Install
-Nginx first and make sure the `nginx` command is available on `PATH`.
-
-Linux, macOS, or WSL:
+Large local XYZ tile folders are served separately from `Tiles/`, not by the Express API. The
+included Node tile server works on Linux, macOS, Windows, and WSL.
 
 ```bash
 cd Tiles
-./start-tile-server.sh
-```
-
-Native Windows PowerShell:
-
-```powershell
-cd Tiles
-.\start-tile-server.ps1
+node tile-server.mjs
 ```
 
 Default local tile URL:
@@ -164,6 +155,18 @@ Example:
 
 ```bash
 curl -I http://localhost:8080/Gereduceerd_Kadaster_tiles/14/8387/5472.png
+```
+
+See `Tiles/README.md` for the optional tile download link and disk space warning.
+
+Optional Nginx launchers are also included for local setups that already have Nginx installed:
+
+```bash
+./start-tile-server.sh
+```
+
+```powershell
+.\start-tile-server.ps1
 ```
 
 ## API Routes

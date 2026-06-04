@@ -1,7 +1,7 @@
 # Local Tiles
 
 The viewer can render local XYZ tiles when they are present in this directory and served by the
-local Nginx tile server.
+local tile server.
 
 Optional tile download:
 
@@ -21,13 +21,17 @@ For the reduced cadastre tiles, the folder should be:
 Tiles/Gereduceerd_Kadaster_tiles/
 ```
 
-After the files are in place, start the tile server from this directory:
+After the files are in place, start the cross-platform Node tile server from this directory:
+
+```bash
+node tile-server.mjs
+```
+
+Optional Nginx launchers are also available if Nginx is installed:
 
 ```bash
 ./start-tile-server.sh
 ```
-
-On native Windows PowerShell:
 
 ```powershell
 .\start-tile-server.ps1
@@ -39,4 +43,5 @@ The frontend will automatically request configured local tile layers from:
 http://localhost:8080/<tile-folder>/{z}/{x}/{y}.png
 ```
 
-The tile archive is large: about 4.5 GB zipped and about 10 GB unzipped. Keep the extracted tile folders out of Git.
+The tile archive is large: about 4.5 GB zipped and about 10 GB unzipped. Keep the extracted tile
+folders out of Git.
