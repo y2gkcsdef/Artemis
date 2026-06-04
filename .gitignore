@@ -5,5 +5,6 @@ client/build/
 server/dist/
 Tiles/*
 !Tiles/nginx.conf.template
+!Tiles/README.md
 !Tiles/start-tile-server.sh
 !Tiles/start-tile-server.ps1

@@ -26,9 +26,7 @@ The repository uses a PostgreSQL custom-format dump for database initialization:
 Dump/artemis_init.dump
 ```
 
-Custom format is restored with `pg_restore`. It is preferred over a raw SQL dump because it avoids
-SQL-runner issues with `\restrict` / `\unrestrict` meta-commands and can recreate the database with
-`--create`.
+Custom format is restored with `pg_restore`
 
 Restore the database with an admin PostgreSQL user:
 
