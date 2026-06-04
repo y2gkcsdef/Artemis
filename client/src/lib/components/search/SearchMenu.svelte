@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte'
+  import { onMount } from 'svelte'
   import Button from '$lib/components/base/Button.svelte'
   import Window from '$lib/components/base/Window.svelte'
   import { focusTimelineLayerByLabel, leftActiveLayers } from '$lib/stores/timeline'
@@ -103,10 +103,10 @@
 
   onMount(() => {
     document.addEventListener('pointerdown', handleDocumentPointerdown)
-  })
 
-  onDestroy(() => {
-    document.removeEventListener('pointerdown', handleDocumentPointerdown)
+    return () => {
+      document.removeEventListener('pointerdown', handleDocumentPointerdown)
+    }
   })
 </script>
 

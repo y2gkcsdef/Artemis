@@ -22,26 +22,71 @@
   let unsubscribeMapFocusRequest: Unsubscriber | undefined
   let rendererManager: ReturnType<typeof createRendererManager> | undefined
 
-  onMount(() => {
-    map = new maplibregl.Map({
-      container: mapContainer,
-      style: {
-        version: 8,
-        sources: {
-          osm: {
-            type: 'raster',
-            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-            tileSize: 256
+  function createBaseMapStyle(backgroundColor: string): maplibregl.StyleSpecification {
+    return {
+      version: 8,
+      sources: {
+        baselayer: {
+          type: 'geojson',
+          data: '/baselayer.geojson'
+        }
+      },
+      layers: [
+        {
+          id: 'background',
+          type: 'background',
+          paint: {
+            'background-color': backgroundColor
           }
         },
-        layers: [
-          {
-            id: 'osm',
-            type: 'raster',
-            source: 'osm'
+        {
+          id: 'baselayer-fill',
+          type: 'fill',
+          source: 'baselayer',
+          filter: ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]],
+          paint: {
+            'fill-color': '#4f8fd8',
+            'fill-opacity': 0.72
           }
-        ]
-      },
+        },
+        {
+          id: 'baselayer-line',
+          type: 'line',
+          source: 'baselayer',
+          filter: [
+            'in',
+            ['geometry-type'],
+            ['literal', ['LineString', 'MultiLineString', 'Polygon', 'MultiPolygon']]
+          ],
+          paint: {
+            'line-color': '#9aa58d',
+            'line-opacity': 0.75,
+            'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.6, 13, 1.2, 17, 2.4]
+          }
+        },
+        {
+          id: 'baselayer-point',
+          type: 'circle',
+          source: 'baselayer',
+          filter: ['in', ['geometry-type'], ['literal', ['Point', 'MultiPoint']]],
+          paint: {
+            'circle-color': '#9aa58d',
+            'circle-opacity': 0.8,
+            'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 2, 14, 5]
+          }
+        }
+      ]
+    }
+  }
+
+  onMount(() => {
+    const backgroundColor = getComputedStyle(mapContainer)
+      .getPropertyValue('--map-background-color')
+      .trim()
+
+    map = new maplibregl.Map({
+      container: mapContainer,
+      style: createBaseMapStyle(backgroundColor),
       center: [4.0, 51.0], // Belgium
       zoom: 9,
       minZoom: 8,

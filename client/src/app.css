@@ -4,6 +4,7 @@
   --control-corner-ratio: 4;
   --font-ui: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
+  --map-background-color: #eef0eb;
 }
 
 * {
@@ -14,5 +15,6 @@
 
 body {
   overflow: hidden;
+  background-color: var(--map-background-color);
   font-family: var(--font-ui);
 }

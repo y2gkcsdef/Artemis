@@ -187,6 +187,8 @@ Temporary debug logs in `Mapcanvas.svelte` print the active sublayers passed to 
 ## Map Rendering
 Sublayer renderers live under `client/src/lib/components/map/renderers/`. Renderer helper modules live under `client/src/lib/components/map/renderers/helpers/`.
 
+The default map background is a static client-served GeoJSON file at `client/static/baselayer.geojson`, referenced at runtime as `/baselayer.geojson`. `Mapcanvas.svelte` loads it as a MapLibre GeoJSON source named `baselayer` and renders neutral fill, line, and point layers before timeline-controlled overlays.
+
 Current flow:
 ```txt
 Scrubber -> currentYear store

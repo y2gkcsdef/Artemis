@@ -29,6 +29,14 @@ client/src/lib/components/
 └── timeline/   # timeline-owned components
 ```
 
+The default MapLibre baselayer is served as static client data from:
+
+```txt
+client/static/baselayer.geojson
+```
+
+SvelteKit exposes this file at `/baselayer.geojson`; `Mapcanvas.svelte` renders it as fill, line, and point background layers.
+
 Timeline state lives in:
 
 ```txt
