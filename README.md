@@ -43,17 +43,26 @@ Native Windows Command Prompt:
 Dump\restore-artemis.cmd
 ```
 
-The API only needs read access. After restoring the dump, create the read-only application user:
+The API only needs read access. After restoring the dump, create the read-only application user
+first:
 
 ```sql
-CREATE USER artemis_reader WITH PASSWORD 'change-me';
+CREATE USER artemis_reader WITH PASSWORD 'readonly';
+```
 
+Then grant read access:
+
+```sql
 GRANT CONNECT ON DATABASE "Artemis" TO artemis_reader;
 GRANT USAGE ON SCHEMA public TO artemis_reader;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO artemis_reader;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO artemis_reader;
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT ON TABLES TO artemis_reader;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT USAGE, SELECT ON SEQUENCES TO artemis_reader;
 ```
 
 If your database name, port, user, or password differs, adjust `server/.env` to match.
