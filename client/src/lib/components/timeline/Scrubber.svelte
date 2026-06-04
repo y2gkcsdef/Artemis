@@ -93,8 +93,8 @@
 
 <style>
   .scrubber {
-    --scrubber-color: #4e4e4e;
-    --scrubber-bg: #fbfff1;
+    --scrubber-color: #4a4438;
+    --scrubber-bg: #fffdf8;
     --scrubber-line-width: 4px;
     --scrubber-line-radius: 999px;
     --scrubber-handle-width: 92px;
@@ -141,8 +141,8 @@
   }
 
   .scrubber.compare-scrubber {
-    --scrubber-color: #1f7a5a;
-    --scrubber-bg: #f0fff8;
+    --scrubber-color: #8b7744;
+    --scrubber-bg: #fff8e8;
 
     z-index: 11;
   }

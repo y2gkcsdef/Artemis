@@ -201,8 +201,8 @@
     height: 100%;
     position: absolute;
     inset: 0;
-    background: rgb(250, 251, 245);
-    color: rgb(35, 35, 35);
+    background: #f3efe6;
+    color: #4a4438;
     display: grid;
     grid-template-rows: auto 1fr;
     font-family: var(--font-ui);
@@ -216,9 +216,9 @@
     justify-content: flex-end;
     gap: 12px;
     padding: 8px 10px;
-    border-bottom: 1px solid rgba(0, 26, 104, 0.1);
-    background: rgba(250, 251, 245, 0.96);
-    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgba(80, 72, 58, 0.12);
+    background: rgba(255, 253, 248, 0.94);
+    box-shadow: 0 1px 10px rgba(31, 47, 54, 0.08);
     z-index: 2;
   }
 
@@ -248,11 +248,11 @@
   }
 
   :global(.metadata-button) {
-    --button-bg: rgb(176, 151, 74);
-    --button-bg-hover: rgb(162, 138, 66);
-    --button-bg-active: rgb(145, 122, 56);
-    --button-color: white;
-    --button-border-color: rgba(130, 106, 45, 0.24);
+    --button-bg: #b88a3a;
+    --button-bg-hover: #a77a2e;
+    --button-bg-active: #916824;
+    --button-color: #fff9ed;
+    --button-border-color: rgba(111, 78, 25, 0.26);
   }
 
   .viewer-stage {
@@ -273,7 +273,7 @@
     max-width: min(560px, 100%);
     margin: 0;
     overflow-wrap: anywhere;
-    color: rgba(52, 52, 52, 0.68);
+    color: rgba(74, 68, 56, 0.68);
     font-size: 12px;
     line-height: 1.5;
     text-align: center;
@@ -312,7 +312,7 @@
   .eyebrow,
   dt {
     display: block;
-    color: rgba(35, 35, 35, 0.48);
+    color: rgba(74, 68, 56, 0.5);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0;
@@ -330,10 +330,10 @@
     justify-content: flex-start;
     margin-bottom: 16px;
     --button-height: 38px;
-    --button-bg: rgb(185, 164, 98);
-    --button-bg-hover: rgb(172, 151, 88);
-    --button-bg-active: rgb(155, 134, 74);
-    --button-color: rgb(35, 35, 35);
+    --button-bg: #d4b66b;
+    --button-bg-hover: #c7a75a;
+    --button-bg-active: #b79546;
+    --button-color: #4a4438;
   }
 
   dl {

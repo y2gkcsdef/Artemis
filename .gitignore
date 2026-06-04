@@ -3,4 +3,7 @@ node_modules/
 client/.svelte-kit/
 client/build/
 server/dist/
-Tiles/
+Tiles/*
+!Tiles/nginx.conf.template
+!Tiles/start-tile-server.sh
+!Tiles/start-tile-server.ps1

@@ -38,12 +38,12 @@
 <style>
   .button {
     /* Color */
-    --button-bg: rgb(251, 255, 241);
-    --button-bg-hover: rgb(246, 251, 232);
-    --button-bg-active: rgb(235, 244, 214);
-    --button-color: rgb(52, 52, 52);
-    --button-border-color: rgba(0, 26, 104, 0.18);
-    --button-focus-color: rgba(32, 181, 92, 0.55);
+    --button-bg: rgba(255, 253, 248, 0.96);
+    --button-bg-hover: #f7f2e7;
+    --button-bg-active: #ece4d5;
+    --button-color: #4a4438;
+    --button-border-color: rgba(80, 72, 58, 0.12);
+    --button-focus-color: rgba(151, 137, 87, 0.42);
 
     /* Size */
     --button-height: 30px;
@@ -104,17 +104,17 @@
 
   .button[data-variant='quiet'] {
     --button-bg: transparent;
-    --button-bg-hover: rgba(0, 26, 104, 0.06);
-    --button-bg-active: rgba(0, 26, 104, 0.1);
+    --button-bg-hover: rgba(80, 72, 58, 0.07);
+    --button-bg-active: rgba(80, 72, 58, 0.11);
     --button-border-color: transparent;
   }
 
   .button[data-variant='danger'] {
-    --button-bg: rgb(255, 243, 238);
-    --button-bg-hover: rgb(255, 233, 224);
-    --button-bg-active: rgb(250, 214, 200);
-    --button-color: rgb(135, 46, 24);
-    --button-border-color: rgba(135, 46, 24, 0.22);
+    --button-bg: #fff0ea;
+    --button-bg-hover: #ffe2d7;
+    --button-bg-active: #f8cdbd;
+    --button-color: #87321f;
+    --button-border-color: rgba(135, 50, 31, 0.24);
   }
 
   .button[data-size='sm'] {

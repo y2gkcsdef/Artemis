@@ -1,0 +1,46 @@
+worker_processes auto;
+error_log logs/error.log;
+pid nginx.pid;
+
+events {
+    worker_connections 1024;
+}
+
+http {
+    types {
+        image/png png;
+    }
+
+    default_type application/octet-stream;
+    sendfile on;
+    keepalive_timeout 65;
+    access_log logs/access.log;
+
+    server {
+        listen 8080;
+        server_name localhost;
+
+        root "__TILES_ROOT__";
+
+        location ~ ^/Gereduceerd_Kadaster_tiles/[0-9]+/[0-9]+/[0-9]+\.png$ {
+            try_files $uri @empty_tile;
+
+            add_header Access-Control-Allow-Origin "http://localhost:5173" always;
+            add_header Cache-Control "public, max-age=31536000, immutable" always;
+        }
+
+        location @empty_tile {
+            empty_gif;
+
+            add_header Access-Control-Allow-Origin "http://localhost:5173" always;
+            add_header Cache-Control "public, max-age=31536000, immutable" always;
+        }
+
+        location / {
+            try_files $uri =404;
+
+            add_header Access-Control-Allow-Origin "http://localhost:5173" always;
+            add_header Cache-Control "public, max-age=31536000, immutable" always;
+        }
+    }
+}

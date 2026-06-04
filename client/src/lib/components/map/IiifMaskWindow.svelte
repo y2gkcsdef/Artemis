@@ -96,14 +96,14 @@
     gap: 8px;
     justify-content: space-between;
     padding: 8px 8px 6px 10px;
-    border-bottom: 1px solid rgba(0, 26, 104, 0.12);
+    border-bottom: 1px solid rgba(80, 72, 58, 0.12);
   }
 
   .mask-window-header h2 {
     margin: 0;
     min-width: 0;
     overflow: hidden;
-    color: rgb(36, 42, 36);
+    color: #4a4438;
     font-family: var(--font-ui);
     font-size: 13px;
     font-weight: 700;
@@ -114,9 +114,9 @@
 
   .mask-preview {
     margin: 10px auto;
-    border: 1px solid rgba(0, 26, 104, 0.16);
+    border: 1px solid rgba(80, 72, 58, 0.14);
     background-repeat: no-repeat;
-    background-color: rgb(237, 239, 220);
+    background-color: #efe6d4;
   }
 
   .mask-window-footer {

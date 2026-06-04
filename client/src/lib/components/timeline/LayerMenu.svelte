@@ -177,7 +177,7 @@
     );
 
     /* Shadow */
-    box-shadow: inset 0 0 0 1.5px rgba(0, 0, 0, 0.08);
+    box-shadow: inset 0 0 0 1.5px rgba(74, 68, 56, 0.12);
   }
 
   .layer-title {
@@ -190,7 +190,7 @@
 
   .layer-label {
     /* Text */
-    color: rgb(52, 52, 52);
+    color: #4a4438;
     font-size: 15px;
     font-weight: 700;
     line-height: 1.1;
@@ -201,7 +201,7 @@
 
   .layer-years {
     /* Text */
-    color: rgba(52, 52, 52, 0.7);
+    color: rgba(74, 68, 56, 0.66);
     font-family: var(--font-mono);
     font-size: 11px;
     line-height: 1;
@@ -222,7 +222,7 @@
 
   .side-label {
     /* Text */
-    color: rgba(52, 52, 52, 0.72);
+    color: rgba(74, 68, 56, 0.66);
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
@@ -233,11 +233,11 @@
 
   :global(.sublayer-button.button) {
     /* Color */
-    --button-bg: rgba(52, 52, 52, 0.08);
-    --button-bg-hover: rgba(52, 52, 52, 0.12);
-    --button-bg-active: rgba(52, 52, 52, 0.16);
-    --button-border-color: rgba(52, 52, 52, 0.12);
-    --button-color: rgb(52, 52, 52);
+    --button-bg: rgba(80, 72, 58, 0.08);
+    --button-bg-hover: rgba(80, 72, 58, 0.13);
+    --button-bg-active: rgba(80, 72, 58, 0.18);
+    --button-border-color: rgba(80, 72, 58, 0.14);
+    --button-color: #4a4438;
   }
 
   :global(.sublayer-button.button.is-enabled) {
@@ -247,9 +247,9 @@
       var(--layer-color-min) calc((1 - var(--layer-color-mix)) * 100%),
       var(--layer-color-max) calc(var(--layer-color-mix) * 100%)
     );
-    --button-bg-hover: color-mix(in srgb, var(--button-bg), black 8%);
-    --button-bg-active: color-mix(in srgb, var(--button-bg), black 16%);
-    --button-border-color: rgba(255, 255, 255, 0.4);
-    --button-color: white;
+    --button-bg-hover: color-mix(in srgb, var(--button-bg), #4a4438 8%);
+    --button-bg-active: color-mix(in srgb, var(--button-bg), #4a4438 16%);
+    --button-border-color: rgba(255, 253, 248, 0.44);
+    --button-color: #fffdf8;
   }
 </style>

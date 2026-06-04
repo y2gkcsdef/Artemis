@@ -155,8 +155,8 @@
     style="
       --button-height: 24px;
       --button-min-width: 24px;
-      --button-color: white;
-      --button-border-color: rgba(255, 255, 255, 0.46);
+      --button-color: #fff9ed;
+      --button-border-color: rgba(255, 249, 237, 0.5);
     "
     onclick={handleMenuToggle}
     onkeydown={handleMenuKeydown}
@@ -172,8 +172,8 @@
 <style>
   .layer-anchor {
     /* Color */
-    --layer-color-min: rgb(223, 188, 75);
-    --layer-color-max: rgb(59, 181, 32);
+    --layer-color-min: #b57b44;
+    --layer-color-max: #8da25a;
 
     /* Animation */
     --layer-pop-distance: 10px;
@@ -184,7 +184,7 @@
     /* Active state */
     --layer-active-shadow-y: 7px;
     --layer-active-shadow-blur: 2px;
-    --layer-active-shadow-color: rgba(0, 0, 0, 0.22);
+    --layer-active-shadow-color: rgba(63, 57, 45, 0.18);
 
     /* Deactivated state */
     --layer-deactivated-saturation: 0.18;
@@ -243,7 +243,7 @@
     );
 
     /* Text */
-    color: white;
+    color: #fffdf8;
     font-family: var(--font-ui);
     font-size: 10px;
     font-weight: 600;
@@ -260,8 +260,8 @@
       var(--layer-color-min) calc((1 - var(--layer-color-mix)) * 100%),
       var(--layer-color-max) calc(var(--layer-color-mix) * 100%)
     );
-    --button-bg-hover: color-mix(in srgb, var(--button-bg), black 8%);
-    --button-bg-active: color-mix(in srgb, var(--button-bg), black 16%);
+    --button-bg-hover: color-mix(in srgb, var(--button-bg), #4a4438 8%);
+    --button-bg-active: color-mix(in srgb, var(--button-bg), #4a4438 16%);
 
     /* Base component */
     position: absolute;
@@ -271,6 +271,6 @@
     transform: translateY(-50%);
 
     /* Shadow */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 2px 8px rgba(63, 57, 45, 0.18);
   }
 </style>

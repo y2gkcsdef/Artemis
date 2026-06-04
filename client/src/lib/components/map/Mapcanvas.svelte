@@ -22,7 +22,7 @@
   let unsubscribeMapFocusRequest: Unsubscriber | undefined
   let rendererManager: ReturnType<typeof createRendererManager> | undefined
 
-  function createBaseMapStyle(backgroundColor: string): maplibregl.StyleSpecification {
+  function createBaseMapStyle(): maplibregl.StyleSpecification {
     return {
       version: 8,
       sources: {
@@ -36,7 +36,7 @@
           id: 'background',
           type: 'background',
           paint: {
-            'background-color': backgroundColor
+            'background-color': '#f3efe6'
           }
         },
         {
@@ -45,8 +45,8 @@
           source: 'baselayer',
           filter: ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]],
           paint: {
-            'fill-color': '#4f8fd8',
-            'fill-opacity': 0.72
+            'fill-color': '#a9cdd8',
+            'fill-opacity': 0.58
           }
         },
         {
@@ -59,8 +59,8 @@
             ['literal', ['LineString', 'MultiLineString', 'Polygon', 'MultiPolygon']]
           ],
           paint: {
-            'line-color': '#9aa58d',
-            'line-opacity': 0.75,
+            'line-color': '#86b7c5',
+            'line-opacity': 0.7,
             'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.6, 13, 1.2, 17, 2.4]
           }
         },
@@ -70,8 +70,8 @@
           source: 'baselayer',
           filter: ['in', ['geometry-type'], ['literal', ['Point', 'MultiPoint']]],
           paint: {
-            'circle-color': '#9aa58d',
-            'circle-opacity': 0.8,
+            'circle-color': '#d4b466',
+            'circle-opacity': 0.78,
             'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 2, 14, 5]
           }
         }
@@ -80,13 +80,9 @@
   }
 
   onMount(() => {
-    const backgroundColor = getComputedStyle(mapContainer)
-      .getPropertyValue('--map-background-color')
-      .trim()
-
     map = new maplibregl.Map({
       container: mapContainer,
-      style: createBaseMapStyle(backgroundColor),
+      style: createBaseMapStyle(),
       center: [4.0, 51.0], // Belgium
       zoom: 9,
       minZoom: 8,
@@ -97,15 +93,6 @@
     map.on('load', () => {
       rendererManager = createRendererManager(map, side)
       unsubscribeActiveSublayers = activeSublayers.subscribe($activeSublayers => {
-        const activeSublayerSummary = $activeSublayers
-          .map(
-            sublayer =>
-              `${sublayer.id}:${sublayer.type}:${sublayer.layer_label}/${sublayer.label}:default=${sublayer.default_visibility}:sort=${sublayer.sort_order}`
-          )
-          .join(' | ')
-
-        console.log(`[map:${side}] reconcile active sublayers: ${activeSublayerSummary || 'none'}`)
-
         rendererManager?.reconcile($activeSublayers).catch(err => {
           console.error('[map-renderer] failed to reconcile active sublayers', err)
         })

@@ -167,14 +167,12 @@ Compare view implementation:
 11. The visible compare timeline is a single full-width `Timeline` that renders a second `Scrubber` bound to right-side state when map compare mode is enabled.
 
 ## Timeline UI
-- `Timeline.svelte`: orchestrates axis, ticks, scrubber, layer blocks, and debug logging.
+- `Timeline.svelte`: orchestrates axis, ticks, scrubber, and layer blocks.
 - `TimelineLayer.svelte`: renders one visual layer block, owns layer click/focus interaction and visual active/deactivated states. It also renders the attached sublayer-menu button. In compare mode, layer clicks focus the scrubber nearest the layer center.
 - `LayerMenu.svelte`: timeline-owned popout menu rendered from a timeline layer. It uses `Window` and `Button`, shows layer metadata, and toggles sublayer visibility through side-specific timeline-store overrides. In compare mode it duplicates sublayer controls into left/right columns.
 - `Scrubber.svelte`: draggable year selector; updates the side-specific current year; dragging clears layer focus for that side.
 - `Window.svelte`: reusable base component for window chrome.
 - `Button.svelte`: reusable base button primitive. Sizing is controlled by the placing component through CSS variables.
-
-Temporary debug logs in `Mapcanvas.svelte` print the active sublayers passed to renderer reconciliation.
 
 ## Search UI
 - Search components live in `client/src/lib/components/search/`.
@@ -214,7 +212,7 @@ IIIF mask rendering is implemented as a companion to the IIIF tileserver rendere
 
 IIIF mask preview windows are rendered by `client/src/lib/components/map/IiifMaskWindow.svelte` from state in `workspace.ts`. Current reduced-cadastre masks use `/gereduceerd_sprites.jpg`; primitive-cadastre support is mapped to `/primitief_sprites.jpg` for future rows. The crop coordinates come from `iiif_mask.sprite_x`, `sprite_y`, `sprite_width`, and `sprite_height`; the static sprite JSON metadata is not needed at runtime. Pressing View opens `client/src/lib/components/iiif/IiifViewer.svelte` in the opposite workspace pane and disables map compare so no second timeline scrubber is added.
 
-Toponym renderer is still a stub/logger.
+Toponym renderer is still a no-op stub.
 
 Shared always-visible GeoJSON polygon rendering for parcel-style layers lives in `client/src/lib/components/map/renderers/geojsonOverlay.ts`. IIIF mask hover rendering lives separately in `client/src/lib/components/map/renderers/iiifMask.ts`.
 
@@ -236,4 +234,3 @@ Shared always-visible GeoJSON polygon rendering for parcel-style layers lives in
 
 ## Current Todos
 - Implement the toponym API and renderer.
-- Remove temporary map-boundary active-sublayer debug logging once renderer work stabilizes.

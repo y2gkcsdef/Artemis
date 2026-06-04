@@ -184,7 +184,7 @@
     left: 0;
     right: 0;
     height: 5px;
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(80, 72, 58, 0.16);
   }
 
   .tick {
@@ -200,13 +200,13 @@
     content: '';
     width: 1px;
     height: 6px;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(80, 72, 58, 0.22);
   }
 
   .tick-label {
     font-family: var(--font-mono);
     font-size: 10px;
-    color: rgba(0, 0, 0, 0.35);
+    color: rgba(74, 68, 56, 0.38);
     white-space: nowrap;
     margin-top: 3px;
   }

@@ -190,7 +190,7 @@
     border: 0;
     outline: 0;
     background: transparent;
-    color: rgb(52, 52, 52);
+    color: #4a4438;
     font-family: var(--font-ui);
     font-size: 14px;
     font-weight: 600;
@@ -198,7 +198,7 @@
   }
 
   .search-form input::placeholder {
-    color: rgba(52, 52, 52, 0.48);
+    color: rgba(74, 68, 56, 0.46);
   }
 
   .search-filters {
@@ -206,20 +206,20 @@
     flex-wrap: wrap;
     gap: 6px;
     border: 0;
-    border-top: 1px solid rgba(0, 26, 104, 0.08);
+    border-top: 1px solid rgba(80, 72, 58, 0.1);
     padding: 8px;
   }
 
   .search-filters label {
     min-width: 0;
-    border: 1px solid rgba(0, 26, 104, 0.08);
+    border: 1px solid rgba(80, 72, 58, 0.1);
     border-radius: calc(22px / var(--control-corner-ratio));
-    background: rgba(52, 52, 52, 0.05);
+    background: rgba(80, 72, 58, 0.05);
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 5px 7px;
-    color: rgba(52, 52, 52, 0.72);
+    color: rgba(74, 68, 56, 0.72);
     cursor: pointer;
     font-size: 11px;
     font-weight: 700;
@@ -230,7 +230,7 @@
   .search-filters input {
     width: 12px;
     height: 12px;
-    accent-color: rgb(59, 181, 32);
+    accent-color: #8da25a;
   }
 
   .search-results {
@@ -238,13 +238,13 @@
     gap: 4px;
     max-height: min(360px, calc(100vh - 180px));
     overflow: auto;
-    border-top: 1px solid rgba(0, 26, 104, 0.1);
+    border-top: 1px solid rgba(80, 72, 58, 0.12);
     padding: 8px;
   }
 
   .search-status {
     padding: 6px 4px;
-    color: rgba(52, 52, 52, 0.58);
+    color: rgba(74, 68, 56, 0.58);
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 700;
@@ -266,14 +266,14 @@
 
   .search-result:hover,
   .search-result:focus-visible {
-    background: rgba(0, 26, 104, 0.06);
+    background: rgba(151, 137, 87, 0.1);
     outline: none;
   }
 
   .result-label {
     min-width: 0;
     overflow: hidden;
-    color: rgb(52, 52, 52);
+    color: #4a4438;
     font-size: 13px;
     font-weight: 700;
     line-height: 1.15;
@@ -284,7 +284,7 @@
   .result-source {
     min-width: 0;
     overflow: hidden;
-    color: rgba(52, 52, 52, 0.62);
+    color: rgba(74, 68, 56, 0.62);
     font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 700;
@@ -301,10 +301,10 @@
 
   .result-tags span {
     min-width: 0;
-    border: 1px solid rgba(0, 26, 104, 0.08);
+    border: 1px solid rgba(80, 72, 58, 0.1);
     border-radius: calc(18px / var(--control-corner-ratio));
-    background: rgba(52, 52, 52, 0.06);
-    color: rgba(52, 52, 52, 0.62);
+    background: rgba(190, 164, 98, 0.16);
+    color: rgba(74, 68, 56, 0.68);
     font-family: var(--font-mono);
     font-size: 10px;
     font-weight: 700;
