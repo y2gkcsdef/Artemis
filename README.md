@@ -56,13 +56,19 @@ Then grant read access:
 
 ```sql
 GRANT CONNECT ON DATABASE "Artemis" TO artemis_reader;
+```
+```sql
 GRANT USAGE ON SCHEMA public TO artemis_reader;
+```
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO artemis_reader;
+```sql
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO artemis_reader;
-
+```
+```sql
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT ON TABLES TO artemis_reader;
-
+``` 
+```sql
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT USAGE, SELECT ON SEQUENCES TO artemis_reader;
 ```
