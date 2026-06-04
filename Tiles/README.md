@@ -21,20 +21,10 @@ For the reduced cadastre tiles, the folder should be:
 Tiles/Gereduceerd_Kadaster_tiles/
 ```
 
-After the files are in place, start the cross-platform Node tile server from this directory:
+After the files are in place, start the tile server from this directory:
 
 ```bash
 node tile-server.mjs
-```
-
-Optional Nginx launchers are also available if Nginx is installed:
-
-```bash
-./start-tile-server.sh
-```
-
-```powershell
-.\start-tile-server.ps1
 ```
 
 The frontend will automatically request configured local tile layers from:

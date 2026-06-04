@@ -137,8 +137,8 @@ pnpm build
 
 ## Local Tile Server
 
-Large local XYZ tile folders are served separately from `Tiles/`, not by the Express API. The
-included Node tile server works on Linux, macOS, Windows, and WSL.
+Local XYZ tile folders are optional. If you download them, serve them with the included Node tile
+server:
 
 ```bash
 cd Tiles
@@ -158,16 +158,6 @@ curl -I http://localhost:8080/Gereduceerd_Kadaster_tiles/14/8387/5472.png
 ```
 
 See `Tiles/README.md` for the optional tile download link and disk space warning.
-
-Optional Nginx launchers are also included for local setups that already have Nginx installed:
-
-```bash
-./start-tile-server.sh
-```
-
-```powershell
-.\start-tile-server.ps1
-```
 
 ## API Routes
 
