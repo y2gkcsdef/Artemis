@@ -5,7 +5,7 @@ Artemis is a historical map viewer for the Scheldt/Schelde region. The public-fa
 ## Requirements
 
 - Node.js `20.19+` or `22.12+`
-- pnpm `11.x`
+- npm, included with Node.js
 - PostgreSQL with PostGIS
 - Optional local XYZ tiles are served with the included Node tile server
 
@@ -64,17 +64,17 @@ Install dependencies:
 
 ```bash
 cd server
-pnpm install
+npm install
 ```
 
-Create `server/.env`:
+`server/.env` is included with local defaults:
 
 ```env
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=Artemis
 DB_USER=artemis_reader
-DB_PASSWORD=change-me
+DB_PASSWORD=readonly
 ```
 
 Start the API:
@@ -101,13 +101,13 @@ Install dependencies:
 
 ```bash
 cd client
-pnpm install
+npm install
 ```
 
 Start the SvelteKit dev server:
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 Default frontend URL:
@@ -131,8 +131,8 @@ SvelteKit serves it at:
 Useful client checks:
 
 ```bash
-pnpm check
-pnpm build
+npm run check
+npm run build
 ```
 
 ## Local Tile Server
