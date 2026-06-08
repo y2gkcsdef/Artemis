@@ -3,6 +3,7 @@
   import {
     focusTimelineLayer,
     focusTimelineLayerNearScrubber,
+    type Sublayer,
     type TimelineLayerState,
     type TimelineSide
   } from '$lib/stores/timeline'
@@ -45,6 +46,9 @@
   const colorMix = $derived(getColorMix(layer.label))
   const popDirection = $derived(layerTop < axisTop ? -1 : 1)
   const shadowDirection = $derived(layerTop < axisTop ? 1 : -1)
+  const hasToggleableSublayers = $derived(
+    layer.sublayers.some((sublayer: Sublayer) => sublayer.type !== 'toponym')
+  )
   let closeMenuTimeout: ReturnType<typeof setTimeout> | null = null
 
   function getColorMix(seed: string): number {
@@ -145,26 +149,28 @@
     {layer.label}
   </div>
 
-  <Button
-    class="layer-menu-button"
-    aria-label={menuOpen
-      ? `Close ${layer.label} sublayer menu`
-      : `Open ${layer.label} sublayer menu`}
-    aria-expanded={menuOpen}
-    size="icon"
-    style="
-      --button-height: 24px;
-      --button-min-width: 24px;
-      --button-color: #fff9ed;
-      --button-border-color: rgba(255, 249, 237, 0.5);
-    "
-    onclick={handleMenuToggle}
-    onkeydown={handleMenuKeydown}
-  >
-    ^
-  </Button>
+  {#if hasToggleableSublayers}
+    <Button
+      class="layer-menu-button"
+      aria-label={menuOpen
+        ? `Close ${layer.label} sublayer menu`
+        : `Open ${layer.label} sublayer menu`}
+      aria-expanded={menuOpen}
+      size="icon"
+      style="
+        --button-height: 24px;
+        --button-min-width: 24px;
+        --button-color: #fff9ed;
+        --button-border-color: rgba(255, 249, 237, 0.5);
+      "
+      onclick={handleMenuToggle}
+      onkeydown={handleMenuKeydown}
+    >
+      ^
+    </Button>
+  {/if}
 
-  {#if menuOpen}
+  {#if menuOpen && hasToggleableSublayers}
     <LayerMenu {layer} {colorMix} {side} {compareEnabled} onClose={onMenuClose} />
   {/if}
 </div>

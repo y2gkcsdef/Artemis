@@ -23,6 +23,9 @@
   const rightVisibilityOverrides = getSublayerVisibilityOverridesStore('right')
   // svelte-ignore state_referenced_locally
   const sideVisibilityOverrides = getSublayerVisibilityOverridesStore(side)
+  const toggleableSublayers = $derived(
+    layer.sublayers.filter((sublayer: Sublayer) => sublayer.type !== 'toponym')
+  )
 
   function stopMenuClick(event: MouseEvent) {
     event.stopPropagation()
@@ -75,7 +78,7 @@
           <span class="side-label">Left</span>
           <span class="side-label">Right</span>
 
-          {#each layer.sublayers as sublayer}
+          {#each toggleableSublayers as sublayer}
             <Button
               class="sublayer-button {isSublayerVisible(sublayer, $leftVisibilityOverrides)
                 ? 'is-enabled'
@@ -111,7 +114,7 @@
         </div>
       {:else}
         <div class="sublayer-list" aria-label="Sublayers">
-          {#each layer.sublayers as sublayer}
+          {#each toggleableSublayers as sublayer}
             <Button
               class="sublayer-button {isSublayerVisible(sublayer, $sideVisibilityOverrides)
                 ? 'is-enabled'

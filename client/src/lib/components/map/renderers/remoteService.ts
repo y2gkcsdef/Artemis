@@ -29,6 +29,49 @@ function getLayerId(id: number, suffix = 'raster') {
   return `remote-service-${id}-${suffix}`
 }
 
+function getQueryParameter(url: URL, name: string) {
+  const entry = [...url.searchParams].find(([key]) => key.toLowerCase() === name.toLowerCase())
+  return entry?.[1]
+}
+
+function deleteQueryParameter(url: URL, name: string) {
+  for (const key of [...url.searchParams.keys()]) {
+    if (key.toLowerCase() === name.toLowerCase()) {
+      url.searchParams.delete(key)
+    }
+  }
+}
+
+export function buildWmsTileUrl(endpoint: string) {
+  const url = new URL(endpoint)
+  const layers = getQueryParameter(url, 'layers')
+
+  if (!layers) {
+    throw new Error(`WMS endpoint is missing a layers parameter: ${endpoint}`)
+  }
+
+  const getMapParameters = {
+    SERVICE: 'WMS',
+    REQUEST: 'GetMap',
+    VERSION: '1.3.0',
+    LAYERS: layers,
+    STYLES: '',
+    FORMAT: 'image/png',
+    TRANSPARENT: 'TRUE',
+    CRS: 'EPSG:3857',
+    BBOX: '{bbox-epsg-3857}',
+    WIDTH: '256',
+    HEIGHT: '256'
+  }
+
+  for (const [name, value] of Object.entries(getMapParameters)) {
+    deleteQueryParameter(url, name)
+    url.searchParams.append(name, value)
+  }
+
+  return url.toString().replace('%7Bbbox-epsg-3857%7D', '{bbox-epsg-3857}')
+}
+
 function removeLayerIfPresent({ map, layerId }: { map: maplibregl.Map; layerId: string }) {
   if (map.getLayer(layerId)) {
     map.removeLayer(layerId)
@@ -139,11 +182,20 @@ export const remoteServiceRenderer: SublayerRenderer = {
       return
     }
 
-    if (resolved.type === 'wmts' || resolved.type === 'wms') {
+    if (resolved.type === 'wmts') {
       addRasterService({
         map,
         id: sublayer.id,
         tiles: [remoteService.endpoint]
+      })
+      return
+    }
+
+    if (resolved.type === 'wms') {
+      addRasterService({
+        map,
+        id: sublayer.id,
+        tiles: [buildWmsTileUrl(remoteService.endpoint)]
       })
       return
     }
